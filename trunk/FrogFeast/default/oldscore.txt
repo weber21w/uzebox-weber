@@ -1,0 +1,116 @@
+inline uint16_t CpuScoreAndGravity(){
+	uint16_t overall = 0;
+	uint8_t chain = 0;
+	uint16_t total = 0;
+	uint8_t t0,t1,t2,t3,t4;
+	uint8_t off;
+CPUSCORETOP:
+
+
+	// CHECK VERTICAL
+	for(uint8_t x=0;x<6;x++) {
+		off = x;
+	    for(uint8_t y=1; y<15-crashheight[1];y++){
+			off += 6;//
+			t1 = cpubuffer[off];//get_buffer(x,y);
+			if(!t1)
+				continue;
+			t0 = cpubuffer[off-6];//get_buffer(x,y-1);
+			t2 = cpubuffer[off+6];//get_buffer(x,y+1);
+
+			if(t1==t0 && t1==t2){
+				cpubuffer[off-6] |= SCORINGJEWEL;//set_buffer_scoring(x,y-1);
+				cpubuffer[off]	 |= SCORINGJEWEL;//set_buffer_scoring(x,y);
+				cpubuffer[off+6] |= SCORINGJEWEL;//set_buffer_scoring(x,y+1);
+				total+=3;
+			}
+	    }
+	}
+	
+	// CHECK HORIZONTAL
+	for(uint8_t x=1;x<5;x++) {
+		off = x;
+	    for(uint8_t y=0; y<16-crashheight[1];y++){
+			t1 = get_buffer(x,y);
+			if(!t1)
+				continue;
+			t0 = get_buffer(x-1,y);
+			t2 = get_buffer(x+1,y);
+
+			if(t1==t0 && t1==t2){
+				set_buffer_scoring(x-1,y);
+				set_buffer_scoring(x,y);
+				set_buffer_scoring(x+1,y);
+				total+=3;
+			}
+			off += 6;
+	    }
+	}
+	
+	// CHECK DIAGONALS
+	for(uint8_t x=1;x<5;x++) {
+		for(uint8_t y=1;y<15-crashheight[1];y++) {
+			t0 = get_buffer(x,y);
+			if(!t0)
+				continue;
+			t1 = get_buffer(x-1,y+1);
+			t2 = get_buffer(x+1,y-1);
+			t3 = get_buffer(x-1,y-1);
+			t4 = get_buffer(x+1,y+1);
+			
+			if(t0==t1 && t0==t2){
+				set_buffer_scoring(x,y);
+				set_buffer_scoring(x-1,y+1);
+				set_buffer_scoring(x+1,y-1);
+				total+=3;
+			}
+			if(t0==t3 && t0==t4){
+				set_buffer_scoring(x,y);
+				set_buffer_scoring(x-1,y-1);
+				set_buffer_scoring(x+1,y+1);
+				total+=3;
+			}
+		}
+	}
+
+	for(uint16_t i=0;i<WELLSIZE;i++){
+		if(cpubuffer[i] & SCORINGJEWEL)
+			cpubuffer[i] = 0;
+	}
+	
+///////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+////////DO GRAVITY/////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+	//start from the top of the well
+
+//CPUGRAVITYTOP:
+	uint16_t offset = 0;
+//	bool moved;
+	
+	for(int8_t x=0;x<6;x++){
+		offset = x;
+		for(uint8_t y=0;y<15-crashheight[1];y++){
+			t0 = cpubuffer[offset];
+			if(t0){
+				t1 = cpubuffer[offset+6];
+				if(!t1){
+					cpubuffer[offset+6] = cpubuffer[offset];
+					cpubuffer[offset] = 0;
+					x--;
+					break;
+				}
+			}
+			offset+=6;
+		}
+	}
+
+	if(total){
+		chain++;
+		overall += (total*chain);
+		total = 0;//<--
+		goto CPUSCORETOP;
+	}
+	
+	return overall*overall;
+}
