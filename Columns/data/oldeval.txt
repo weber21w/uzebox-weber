@@ -1,0 +1,125 @@
+	uint16_t score = 0;
+	uint16_t off = (WELLSIZE-5);
+	uint8_t t;
+/*
+{-20}{-19}{-18}{-17}{-16}{-15}
+{-14}{-13}{-12}{-11}{-10}{ -9}
+{ -8}{ -7}{ -6}{ -5}{ -4}{ -3}
+{ -2}{ -1}{ X }{ +1}{ +2}{ +3}
+
+*/
+	for(uint8_t y=15;y>2+3;y--){
+		for(uint8_t x=1;x<5;x++){
+			if(!(t = cpubuffer[off++]))
+				continue;	
+			
+			if(t == cpubuffer[off+1]){
+				score += 1;
+				//if(x < 4 && !cpubuffer[off+2]){
+					//score += 2;
+					//if(x<3 && t == cpubuffer[off+3])
+						//score += 3;
+				//}					
+			}
+			else if(x < 4 && t == cpubuffer[off+2]){
+				if(cpubuffer[off+1] == 0)
+					score += 1;
+			}
+	
+			if(x < 4 && /*x < 5 && */t == cpubuffer[off-5]){//above right
+				score+=1;
+				if(true){//x < 4){
+					 if(!cpubuffer[off-10]){
+						score+=1;
+						if(x < 3 && t == cpubuffer[off-15])
+							score += 1;
+					
+					}
+					else if(t == cpubuffer[off-16]){//one is in scoring spot, see if it could drop the right color
+						//score += 1;
+						if(x < 4){
+						t = cpubuffer[off-10];
+						if(t == cpubuffer[off-11])
+						score += 1;
+						if(t == cpubuffer[off-17])
+						score += 1;
+						}						
+						if(x < 3){
+							if(t == cpubuffer[off-9])
+							score += 1;
+							if(t == cpubuffer[off-15])
+							score += 1;
+						}
+						t = cpubuffer[off];
+					}
+				}				
+				
+				
+			}
+			if(x > 1 && y > 6 && t == cpubuffer[off-7]){//above left(TODO MAKE SURE IT WORKS)
+				score += 1;
+				if(true){
+					 if(!cpubuffer[off-14]){
+						score+=1;
+						 if(x > 2 && t == cpubuffer[off-21])
+							score += 1;
+					 }
+					 else if(x > 3 && y >3 && t == cpubuffer[off-20]){//one is in scoring spot, see if it could drop the right color
+						//score += 1;
+						 t = cpubuffer[off-14];
+						 if(t == cpubuffer[off-13])
+							score += 1;
+						if(t == cpubuffer[off-19])
+							score += 1;
+						if(x > 2){
+							if(t == cpubuffer[off-15])
+								score += 1;
+							if(t == cpubuffer[off-21])
+								score += 1;
+						}
+						t = cpubuffer[off];
+				 }
+			 }
+			}
+	
+			if(y > 6 && t == cpubuffer[off-6]){
+				score += 2;
+				if(!cpubuffer[off-12])
+					score += 1;
+				else{
+					if((cpubuffer[off-12] == cpubuffer[off-11]) || (cpubuffer[off-12] == cpubuffer[off-13]))
+						score += 1;
+					else if((cpubuffer[off-12] == cpubuffer[off-17]) || (cpubuffer[off-12] == cpubuffer[off-19]))
+						score += 1;
+				}
+				if(t == cpubuffer[off-18]){//see if this could drop
+					//score += 3;
+					
+					t = cpubuffer[off-12];
+					if(t == cpubuffer[off-11])
+						score += 2;
+					if(t == cpubuffer[off-17])
+						score += 2;
+					if(x > 3){
+						if(t == cpubuffer[off-13])
+							score += 1;
+						if(t == cpubuffer[off-19])
+							score += 1;	
+					}
+					t = cpubuffer[off];
+				}
+				else if(!cpubuffer[off-12])//nothing above
+					score += 1;
+				//if(cpubuffer[off-12] == 0 || cpubuffer[off-18] == t)
+					//score += 3;
+				//else{
+					////if(cpubuffer[off-12] == cpubuffer[off-17])
+				//		score += 4;
+			//	}			
+			}
+			off++;
+		}//x			
+		off -= 10;
+	}//y
+	
+	return score;

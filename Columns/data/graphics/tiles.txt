@@ -1,0 +1,11 @@
+const char ColumnsTiles[] PROGMEM ={
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,//black tile
+#include "bg.txt"
+#include "jewels.txt"
+#include "numbers.txt"
+};
+#include "banner.txt"
+#include "maps.txt"
+#include "magictiles.inc"
+#include "crashtiles.txt"
+#include "explosiontiles.txt"
