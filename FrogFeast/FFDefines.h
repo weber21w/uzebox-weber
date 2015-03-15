@@ -99,8 +99,8 @@ typedef struct{
 
 
 //#define LEAP_BUTTON (uint16_t)(BTN_B|BTN_A|BTN_UP)
-#define JUMP_BUTTON (uint16_t)(BTN_UP|BTN_A)
-#define LICK_BUTTON (uint16_t)(BTN_B|BTN_SL|BTN_SR)
+#define JUMP_BUTTON (uint16_t)(BTN_UP|BTN_A|BTN_Y)//supports NES pads without recompile
+#define LICK_BUTTON (uint16_t)(BTN_B|BTN_SL|BTN_SR|BTN_X)
 
 
 //AI constants
