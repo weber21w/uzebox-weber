@@ -1,0 +1,7 @@
+#include "stage2song.inc"
+#include "stage3song.inc"
+#include "stage4song.inc"
+#include "stage5song.inc"
+#include "stage6song.inc"
+//#include "stage1song.inc"
+#include "stage7song.inc"
