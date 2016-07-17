@@ -1,0 +1,68 @@
+# depslib dependency file v1.0
+1468715285 source:c:\users\lee\desktop\uzeboxmasterserver\netgame\main.cpp
+	<stdio.h>
+	<string.h>
+	<time.h>
+	<winsock.h>
+	<sys/socket.h>
+	<arpa/inet.h>
+	<netdb.h>
+	<unistd.h>
+	"defs.hpp"
+	"system.hpp"
+
+1468715230 c:\users\lee\desktop\uzeboxmasterserver\netgame\defs.hpp
+
+1468683316 source:c:\users\lee\desktop\uzeboxmasterserver\netgame\client.cpp
+	<iostream>
+	<stdio.h>
+	<string.h>
+	<winsock.h>
+	<sys/socket.h>
+	<arpa/inet.h>
+	<netdb.h>
+	<unistd.h>
+	"client.hpp"
+
+1468715509 c:\users\lee\desktop\uzeboxmasterserver\netgame\client.hpp
+	"users.hpp"
+	<iostream>
+	<stdio.h>
+	<string.h>
+	<winsock.h>
+	<sys/socket.h>
+	<arpa/inet.h>
+	<netdb.h>
+	<unistd.h>
+	"client.hpp"
+
+1468686078 c:\users\lee\desktop\uzeboxmasterserver\netgame\users.hpp
+	<stdio.h>
+
+1468714681 c:\users\lee\desktop\uzeboxmasterserver\netgame\system.hpp
+	<winsock.h>
+	<sys/socket.h>
+	<arpa/inet.h>
+	<netdb.h>
+	<unistd.h>
+	"users.hpp"
+	"room.hpp"
+
+1468733191 c:\users\lee\desktop\uzeboxmasterserver\netgame\room.hpp
+	<winsock.h>
+	<sys/socket.h>
+	<arpa/inet.h>
+	<netdb.h>
+	<unistd.h>
+	"client.hpp"
+
+1468680216 c:\users\lee\desktop\uzeboxmasterserver\netgame\main.hpp
+
+1468683213 source:c:\users\lee\desktop\uzeboxmasterserver\netgame\room.cpp
+	"room.hpp"
+
+1468683054 source:c:\users\lee\desktop\uzeboxmasterserver\netgame\users.cpp
+	<stdio.h>
+	<string.h>
+	"users.hpp"
+
