@@ -92,107 +92,6 @@ int ESP8266_Container(void *data){//thread container
 }
 
 
-inline void ESPModule::UzeboxUpdateUart(uint32_t cycles){
-
-	//****Emulate transmit timing
-	//***************************
-	if(UartTxDelayCycles > cycles){//can't possibly send another byte yet
-
-		UartTxDelayCycles -= cycles;
-		//io[ports::UCSR0A] &= ~(1<<UDRE0);//done whenever a byte is written to io
-
-
-	}else{// if(ESP.UartTxDelayCycles){//program could send a byte right now
-		
-		UartTxDelayCycles = 0;
-		//io[ports::UCSR0A] |= (1<<UDRE0);//show ready to write, done whenver the io is read
-	}
-
-	//Emulate receive timing
-	//**********************
-	if(UartRxDelayCycles > cycles){//can't possibly have received a new byte yet, UART circuitry would still be receiving the bits
-	
-		UartRxDelayCycles -= cycles;
-
-	}else{
-		//***We could receive a byte, see if there is one ready
-		
-		if(!TxRequested && UzeboxRxBufferBytes){//ESP is not currently synchronizing buffers(TxRequested, avoid race) and data is there
-			//io[ports::UDR0] = ESP.UzeboxRxBuffer[ESP.UzeboxRxBufferPos++];//put the data there
-			UartRxDelayCycles = ESP.UartBaudDelayCycles;//set the delay until we could receive again
-			//io[ports::UCSR0A] |= (1<<RXC0);//show data ready
-			UzeboxRxBufferBytes--;
-			if(!UzeboxRxBufferBytes){
-				UzeboxRxBufferPos = 0;
-			}
-		}else{
-			UartRxDelayCycles = 0;//no receive delay until a new byte has overwritten the old one
-
-			if(!TxRequested && !UzeboxRxBufferBytes)
-				TxRequested = 1;//make module sync buffers
-		}
-	}
-	
-
-	//******Enforce system clock synchronization 
-	//***************************************************
-
-//	if(!UzeboxRxBufferBytes){//we have no data from module, and we can now receive more. See if there is some
-		Decoherence += cycles;
-
-		if(Decoherence > DecoherenceLimit){
-			while(Decoherence){//stall emulation until the module thread catches up, otherwise we can get incorrect program behavior
-
-			//	Sleep(0);//yield to another thread?
-			}
-		//also automatically ensures emulation does not go anywhere far until the module thread is initially setup
-		}
-//	}
-	//******Reset and Clock Timing
-	//****************************
-
-	//ResetPinState = (io[ports::DDRD] & (1<<3));	//update reset pin state//TODO FASTER TO DO IN IO READS??!
-	if(BusyCycles){
-		if(BusyCycles < cycles)
-			BusyCycles = 0;
-		else
-			BusyCycles -= cycles;	//update delay counter for synchronized cycle accurate timing on module side
-	}
-
-	//******Synchronize Uart buffers between threads and avoid race conditions*******
-	//*****************************************************************************
-
-	if(/*!ESP.UartTxDelayCycles && */ESP.UzeboxTxRequested/* && ESP.UzeboxTxBufferPos*/){	//ESP8266 has requested we sync our Tx, it will not read from this buffer until we clear the flag
-
-	//ADDED !UartTxDelayCycles to if...break anything?!?!?!?!?
-
-//asm volatile("": : :"memory");//memory fence, not needed here?
-		uint32_t i,j;
-
-		j = RxBufferBytes;//!!!!module may have previous data it hasn't used yet, don't over write
-
-		for(i=0;i<UzeboxTxBufferPos;i++){
-
-			RxBufferBytes++;
-			RxBuffer[j++] = UzeboxTxBuffer[i];
-	//		if(labs(BaudDivisor-UzeboxBaudDivisor) > 1)//screw up UART data if bauds do not match
-	//			UzeboxTxBuffer[i] += UartScrambler[ESP.UartScramblerPos++];
-	//		printf("U%c,",ESP.RxBuffer[i]);
-		}
-		UzeboxTxBufferPos = 0;//Uzebox Tx buffer is now empty
-
-		//if(i){
-			RxBuffer[j] = '\0';//if we did add a byte, string terminate the module buffer for AT strncmp()
-			RxBufferNewData = 1;//let the module know new data has arrived
-		//}
-asm volatile("": : :"memory");//memory fence to avoid this flag being set out of order
-		UzeboxTxRequested = 0;//let ESP8266 know we are done and it can report new data, if any
-	}
-
-
-
-}
-
 
 uint16_t ESPModule::GetRandom(uint16_t seed){
 	static uint16_t prng_state;
@@ -237,7 +136,10 @@ void ESPModule::Tick(){//must be this format to be called as a thread
 			continue;
 
 //printf("[");
-		if(RxBufferNewData && !UzeboxRxBufferBytes){//Uzebox is still behind on UART time, wait
+		if(RxAwaitingTime){
+			ProcessAT();
+			continue;
+		}else if(RxBufferNewData && !UzeboxRxBufferBytes){//Uzebox is still behind on UART time, wait
 			ProcessAT();
 			RxBufferNewData = 0;
 			continue;
@@ -1568,11 +1470,44 @@ void ESPModule::AT_DEBUG(){//Does not exist on any known firmware(yet), a pseudo
 
 void ESPModule::ProcessAT(){//look at the byte stream Uzebox has sent, search for completed AT commands, handle sending packets out
 
-if(RxAwaitingTime)
-printf(">");
+	//TODO PROCESS BINARY COMMANDS INSTEAD OF AT?!
 
+	if(false && (UartATState & ESP_MODE_BINARY) && !RxAwaitingTime){
+		printf("Binary mode\n");
+		if(!RxAwaitingBytes)
+			return;
+		ProcessBinary();
+		return;
+	}
 
-	
+	if(RxAwaitingTime){//unvarnished transmission mode is active
+//		printf("!");
+//TODO CAN THIS CAUSE BUFFER OVERFLOW IF UZEBOX THREAD STALLS??
+
+		if(RxAwaitingTime > (ESP_UNVARNISHED_DELAY)){
+//printf("*");
+			if(RxBufferBytes == 3 && !strncmp((char *)&CommandBuffer,"+++",3)){//end unvarnished mode
+				printf("End unvarnished transmission mode\n");
+				RxAwaitingTime = 0;//disable unvarnished mode when we receive a packet consisting of only "+++"
+				RxBufferBytes = 0;
+				return;
+			}else
+				RxAwaitingTime -= ESP_UNVARNISHED_DELAY;
+
+			if(RxBufferBytes){
+				//printf("sent unvarnished:%d,%s\n",RxBufferBytes,RxBuffer);
+				NetSend(SendToSocket,(const char *)RxBuffer,RxBufferBytes,0);
+				RxAwaitingBytes = 0;
+				RxBufferBytes = 0;
+			}
+		}else
+		//	printf("-");
+
+		return;
+	}
+
+	//AT+CIPSEND=X.. single send mode
+
 	if(RxBufferBytes<2 || UzeboxTxRequested)//no data we can touch yet
 		return;
 
@@ -1600,28 +1535,7 @@ printf(">");
 			RxAwaitingBytes = 0;//get us out of wait for payload mode
 		}
 		return;
-	}else if(RxAwaitingTime >= ESP_AT_MS_DELAY*20){//awaiting time elapsed for payload window when "AT+CIPMODE=1\r\n...AT+CIPSEND\r\n"
-		if(RxBufferBytes == 3 && !strncmp((char *)&CommandBuffer,"+++",3)){//end unvarnished mode
-			printf("End unvarnished transmission mode\n");
-			RxAwaitingTime = 0;//disable unvarnished mode when we receive a packet consisting of only "+++"
-		}else
-			RxAwaitingTime = 1;
-
-		if(RxAwaitingBytes){
-			NetSend(SendToSocket,(const char *)CommandBuffer,RxAwaitingBytes,0);
-			RxAwaitingBytes = 0;
-			RxBufferBytes = 0;
-		}
-		return;
 	}
-
-
-	//TODO PROCESS BINARY COMMANDS INSTEAD OF AT?!
-
-	//if(State & ESP_MODE_BINARY){
-	//	ProcessBinary();
-	//	return;
-	//}
 
 	if(RxBufferBytes == 2 && CommandBuffer[0] == '\r' && CommandBuffer[1] == '\n'){//handle special case
 		RxBufferBytes = 0;
@@ -1763,9 +1677,19 @@ void ESPModule::ProcessIPD(){//get internet data, put it to Tx
 
 		//Recv() automatically handles UDP or TCP...TODO
 		if((num_bytes = NetRecv(i,(char *)&RxPacket,sizeof(RxPacket),0)) == -1){//no data is available or socket error
-			if(GetLastError() != ESP_WOULD_BLOCK){//error
+			if(GetLastError() != ESP_WOULD_BLOCK){//error, disconnected?
 				/*if(DebugLevel > 0)*/	Debug("recv socket error",GetLastError());
-				TxP((const char*)"CLOSED\r\n");
+				if(false && (UartATState & ESP_MODE_BINARY)){
+					TxP((const char*)"0");//closed command
+					TxI(i);//connection number, always sent regardless of MUX in binary mode
+				}else{
+					if(State & ESP_MUX){
+						TxP((const char*)"CLOSED ");
+						TxI(i);//connection number
+						TxP((const char*)"\r\n");
+					}else
+						TxP((const char*)"CLOSED\r\n");
+				}
 				CloseSocket(i,1);
 			}
 			continue;
@@ -1780,7 +1704,7 @@ void ESPModule::ProcessIPD(){//get internet data, put it to Tx
 
 		while(num_bytes){//send all the data in UART frames of 256 bytes or less
 			
-			printf(".");
+			//printf(".");
 			t = num_bytes;
 			if(t > 256)
 			t = 256;
@@ -1790,21 +1714,37 @@ void ESPModule::ProcessIPD(){//get internet data, put it to Tx
 				TimeStall(0);
 			}
 
-			if(State & ESP_MUX)
-				sprintf(header_buffer,"+IPD,%d,%d:",i,t);
-			else//single connection mode
-				sprintf(header_buffer,"+IPD,%d:",t);
-			TxP(header_buffer);
-			
-			uint32_t k;
-			for(k=0;k<t;k++)
-				TxBuffer[TxBufferPos++] = RxPacket[poff++];
 
-			if(num_bytes >= 256)
-				num_bytes -= 256;
-			else{
-				//TxP((const char *)"\r\n");
-				break;
+			//TODO CHECK ALL BUFFER SIZES ARE LARGE ENOUGH FOR LARGEST PACKET(THEY AREN'T...)
+			if(false && (UartATState & ESP_MODE_BINARY)){
+				TxP((const char*)"1");//recv command
+				TxI(i);//connection num always sent regardless of MUX
+				TxI(num_bytes%256);
+				uint32_t k;
+				for(k=0;k<num_bytes%256;k++)
+					TxBuffer[TxBufferPos++] = RxPacket[poff++];
+				if(num_bytes > 256)
+					num_bytes = 256;
+				else
+					num_bytes = 0;
+
+			}else{//normal text based mode
+				if(State & ESP_MUX)
+					sprintf(header_buffer,"+IPD,%d,%d:",i,t);
+				else//single connection mode
+					sprintf(header_buffer,"+IPD,%d:",t);
+				TxP(header_buffer);
+			
+				uint32_t k;
+				for(k=0;k<t;k++)
+					TxBuffer[TxBufferPos++] = RxPacket[poff++];
+
+				if(num_bytes >= 256)
+					num_bytes -= 256;
+				else{
+					//TxP((const char *)"\r\n");
+					break;
+				}
 			}
 		}
 	}//for
@@ -1856,7 +1796,7 @@ void ESPModule::LoadConfig(){
 	FILE *f = fopen("ESP8266.ini","r");
 	if(f == NULL){
 		Debug("\nESP8266.ini settings file does not exist",0);
-		f = fopen("ESP8266.ini","w+");
+		f = fopen("ESP8266.ini","w");
 		if(f == NULL)//can't create it
 			Debug("Failed to create ESP8266.ini, settings will not be saved",0);
 		else
@@ -1864,23 +1804,33 @@ void ESPModule::LoadConfig(){
 		fclose(f);
 
 		DefaultBaudDivisor = 185;//9600 baud
+
+		memset(SoftAPName,'\0',sizeof(SoftAPName));
 		sprintf(SoftAPName,"Uzem SoftAP");
+		
+		memset(SoftAPPass,'\0',sizeof(SoftAPPass));
 		sprintf(SoftAPPass,"password");
+		
+		memset(SoftAPMAC,'\0',sizeof(SoftAPMAC));
 		sprintf(SoftAPMAC,"01:23:45:67:89:AB");
+		
+		memset(SoftAPIP,'\0',sizeof(SoftAPIP));
 		sprintf(SoftAPIP,"10.0.0.1");
 
-		//for(uint32_t i;i<4;i++)
-		//	SoftAPIP[i] = 1;
+		memset(WifiName,'\0',sizeof(WifiName));
 		sprintf(WifiName,"Uzem Wifi");
+
+		memset(WifiPass,'\0',sizeof(WifiPass));
 		sprintf(WifiPass,"password");
+
+		memset(WifiMAC,'\0',sizeof(WifiMAC));
 		sprintf(WifiMAC,"12:34:56:78:9A:BC");
+
+		memset(WifiIP,'\0',sizeof(WifiIP));
 		sprintf(WifiIP,"10.0.0.1");
-		//for(uint32_t i=0;i<4;i++)
-		//	WifiIP[i] = 1;
 		SaveConfig();
 
-	}else{// if(f != NULL){//file exists, load wifi credentials and mac address
-		DefaultBaudDivisor = fgetc(f);		
+	}else{// if(f != NULL){//file exists, load wifi credentials and mac address	
 
 		fread(SoftAPName,1,sizeof(SoftAPName),f);
 		fread(SoftAPPass,1,sizeof(SoftAPPass),f);
@@ -1891,9 +1841,10 @@ void ESPModule::LoadConfig(){
 		fread(WifiPass,1,sizeof(WifiPass),f);
 		fread(WifiMAC,1,sizeof(WifiMAC),f);
 		fread(WifiIP,1,sizeof(WifiIP),f);
+		DefaultBaudDivisor = fgetc(f);
+
 		if(State & ESP_DID_FIRST_TICK){
 			printf("\nESP8266.ini configuration loaded\n");
-			printf("Default Baud Divisor:%d",DefaultBaudDivisor);
 			printf("Wifi SSID:\"%s\"\n",WifiName);
 			printf("WifiPass:\"%s\"\n",WifiPass);
 			printf("WifiMAC:\"%s\"\n",WifiMAC);
@@ -1903,6 +1854,7 @@ void ESPModule::LoadConfig(){
 			printf("SoftAPPass:\"%s\"\n",SoftAPPass);
 			printf("SoftAPMAC:\"%s\"\n",SoftAPMAC);
 			printf("SoftAPIP:\"%s\"\n",SoftAPIP);
+			printf("Default Baud Divisor:%d",DefaultBaudDivisor);
 
 		}
 		fclose(f);
@@ -1916,12 +1868,11 @@ void ESPModule::SaveConfig(){
 
 	FlashDirty = 0;
 
-	FILE *f = fopen("ESP8266.ini","w+");
+	FILE *f = fopen("ESP8266.ini","w");
 	if(f == NULL){
 	//	Debug("Can't open ESP8266.ini to save settings",0);
 		return;
 	}
-		fputc(DefaultBaudDivisor,f);
 
 		fwrite(SoftAPName,1,sizeof(SoftAPName),f);
 		fwrite(SoftAPPass,1,sizeof(SoftAPPass),f);
@@ -1934,6 +1885,7 @@ void ESPModule::SaveConfig(){
 		fwrite(WifiMAC,1,sizeof(WifiMAC),f);
 		fwrite(WifiIP,1,sizeof(WifiIP),f);
 
+		fputc(DefaultBaudDivisor,f);
 	fclose(f);
 
 }
@@ -1986,7 +1938,11 @@ int32_t ESPModule::Connect(char const *hostname, uint32_t sock, int32_t port, in
 #endif
 			if(DebugLevel > 0)	Debug("Ioctl() failed to set non-blocking mode, error",GetLastError());
 		return INVALID_SOCKET;
-    }
+	}
+
+	bool optval = true;
+	int optlen = sizeof(bool);
+	setsockopt(Socks[sock],IPPROTO_TCP,TCP_NODELAY,(char *)&optval,optlen);
 
     return 0;
 //    return connect(socket,name,name_len);
@@ -2050,7 +2006,7 @@ int32_t ESPModule::GetLastError(){
 int32_t ESPModule::NetSend(uint32_t s, const char *buf, int32_t len, int32_t flags){
 if(len == 0)
 printf("nolen!");
-	if(DebugLevel)	Debug("ESP8266 send()",s);
+	//if(DebugLevel)	Debug("ESP8266 send()",s);
 	return send(Socks[s],buf,len,flags);
 }
 
@@ -2159,7 +2115,64 @@ int ESPModule::HandleReset(){
 
 
 void ESPModule::ProcessBinary(){
+	
 	//TODO 1 byte = 1 command and handle arguments
+
+	uint32_t removebytes = 0;
+
+	if(BinaryState == 0)//need a new command
+		BinaryState = RxBuffer[0];
+
+	if(BinaryState == 1){//"AT\r\n"
+		removebytes = 1;
+		sprintf((char *)&CommandBuffer,"AT\r\n");
+		BinaryState = 0;
+	
+	}else if(BinaryState == 2){//"ATE0\r\n" 
+		removebytes = 1;
+		sprintf((char *)&CommandBuffer,"ATE0\r\n");
+		BinaryState = 0;
+	
+	}else if(BinaryState == 3){//"ATE1\r\n"
+		removebytes = 1;
+		sprintf((char *)&CommandBuffer,"ATE1\r\n");
+		BinaryState = 0;
+		//AT_
+
+	}else if(BinaryState == 4){//"AT+CIPSEND.."
+		removebytes = (State & ESP_MUX)?4:3;//send length is 2 bytes
+		if(removebytes > RxBufferBytes)//not enough data yet, leave the buffer alone and try again later
+			return;
+
+		int n,l;
+		if(removebytes == 4){//MUX
+			n = RxBuffer[1];//connection number
+			l = RxBuffer[2];//length of data
+			sprintf((char *)&CommandBuffer,"AT+CIPSEND=%d,%d\r\n",n,l);
+		}else{
+			l = RxBuffer[2];//length of data
+			sprintf((char *)&CommandBuffer,"AT+CIPSEND=%d\r\n",l);
+		}
+		BinaryState = 0;
+		AT_CIPMUX();
+
+	}else if(BinaryState == 5){//"AT+CIPSTART=..."
+		removebytes = (State & ESP_MUX)?6:5;//5(1),connection_num(1),proto(1),port(2),hostname_len(1),host_name...
+		if(RxBufferBytes <= removebytes || removebytes+RxBuffer[5] > RxBufferBytes)
+			return;
+		
+		int p;
+
+		if(State & ESP_MUX){
+			p = (int)RxBuffer[3];
+			sprintf((char *)&CommandBuffer,"AT+CIPSTART=%d,\"%d\",\"%s\",%d\r\n",RxBuffer[1],(RxBuffer[2] ? "TCP":"UDP"),RxBuffer[6],p);		
+		}else{
+			p = (int)RxBuffer[2];
+			sprintf((char *)&CommandBuffer,"AT+CIPSTART=\"%d\",\"%s\",%d\r\n",(RxBuffer[2] ? "TCP":"UDP"),RxBuffer[6],p);	
+		}
+		AT_CIPSTART();
+		BinaryState = 0;
+	}
 }
 
 
@@ -2172,8 +2185,18 @@ inline int32_t ESPModule::Atoi(char *s){
 
 void ESPModule::TimeStall(uint32_t cycles){
 	//Allow UART and clock synchronization with Uzebox. If Uzebox thread detects module thread is not updating the UART it locks in case the thread is stalled.
-	BusyCycles = cycles;
+	//BusyCycles = cycles;
+
+//totalcycles += ModuleClock;
+//printf("%d\n",totalcycles);
+
+
+//////////////////
+//////Observation: it appears uzebox thread is moving along much faster....
+
+
 	do{
+//ModuleClock++;//hack
 		//UART data synchronization(thread/race safe)
 
 		if(TxRequested){	//Uzebox has requested we sync our Tx, it will not read from this buffer until we clear the flag
@@ -2209,37 +2232,60 @@ asm volatile("": : :"memory");//memory fence
 		}
 
 		//UART synchronization end
-		Decoherence = 0;//let Uzebox thread know we are not hung up too long
 
-	//	Sleep(0);//try to yield to other thread, important for speed!
+	//	Sleep(0);//try to yield to other thread, important for speed!?
 
 		//a couple cycles here from race conditions should not matter much, no other issues with this?!
-		if(BusyCycles <= ModuleClock)
-			BusyCycles = 0;
+		uint64_t Time = ModuleClock;
+		uint64_t Elapsed = Time-OldModuleClock;
+		OldModuleClock = Time;
+
+		if(cycles <= Elapsed)
+			cycles = 0;
 		else
-			BusyCycles -= ModuleClock;
+			cycles -= Elapsed;
 
-		if(RxAwaitingTime)
-			RxAwaitingTime += ModuleClock;
+		asm volatile("": : :"memory");//memory fence
+		Decoherence = 0;//let Uzebox thread know we are not hung up too long
 
+		if(RxAwaitingTime){
+//printf("%d,",cycles);
+		//if(RxAwaitingTime >= ESP_UNVARNISHED_DELAY)
+		//	printf("d");
+			RxAwaitingTime += Elapsed;
+		}
 		if(ServerTimer){
-			if(++ServerTimer > ServerTimeout){//end of listening period
+			ServerTimer += Elapsed;
+			if(ServerTimer > ServerTimeout){//end of listening period
 				CloseSocket(5,1);
 			}
 				
 		}
 
 		if(WifiTimer){
-			if(++WifiTimer > WifiDelay){
+			WifiTimer += Elapsed;
+			if(WifiTimer > WifiDelay){
 				WifiTimer = 0;//turn off counter, do not spawn the message again
 				//TODO MAKE IT CONNECT
 				TxP((const char*)"WIFI GOT IP\r\n");
 			}
 		}
 
-		ModuleClock = 0;
+asm volatile("": : :"memory");//memory fence
+//printf("%d,",ModuleClock);
 
-	}while(BusyCycles);//delay for the specified cycle count based off Uzebox clock	
+//TODO KEEP 64 BIT TIMER AND NEVER RESET, SIMPLY COMPARE OLD AND NEW VALUE, 64 BIT WILL NOT ROLL OVER FOR THOUSANDS OF DAYS
+
+		//ModuleClock = 0;
+
+//RACE CONDITION ON SETTING 0 LOSES CYCLES? MANY MANY CYCLES?!?!?!?!?!?!
+////////!!!!!!!!!!!!!!!!!!!!!!!!!!
+////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+//	printf(".");
+	}while(cycles);//delay for the specified cycle count based off Uzebox clock	
 }
 
 

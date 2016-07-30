@@ -32,20 +32,21 @@ public:
 
 	SDL_Thread *ESP8266_Thread;
 
-	volatile	uint8_t		TxBuffer[4096];//data we will send to Uzebox
+	volatile	uint8_t		TxBuffer[2048];//data we will send to Uzebox
 	volatile	uint32_t		TxBufferPos;//position to write next byte
 	volatile	bool	TxRequested;//Uzebox requests we put Tx data into Uzebox Rx buffer(it will not touch it until we clear this flag)
 
-	volatile	uint8_t	RxBuffer[4096];//data we receive from Uzebox
+	volatile	uint8_t	RxBuffer[2048];//data we receive from Uzebox
 	volatile	uint32_t	RxBufferPos;//position to read from
 	volatile	uint32_t	RxBufferBytes;//number of unread bytes
 			uint32_t	RxAwaitingBytes;//number of bytes we are waiting for, as a "AT+CIPSEND..." payload
 	volatile	uint32_t	RxAwaitingTime;//cycles elapsed counting towards "unvarnished mode" packet interval
 	volatile	uint32_t	RxBufferNewData;//new data since last iteration?
-			uint32_t	ModuleClock;
-			uint8_t	CommandBuffer[4096];//non-volatile buffer that all commands are brought to before the host of string compares
+	volatile	uint64_t	ModuleClock;//TODO...WHAT IF ROLLOVER ON BYTE WITH NON-ATOMIC 64BIT LOAD?!?!
+			uint64_t	OldModuleClock;
+			uint8_t	CommandBuffer[2048];//non-volatile buffer that all commands are brought to before the many string compares
 
-	volatile	uint8_t		UzeboxTxBuffer[4096];//data sent to ESP module
+	volatile	uint8_t		UzeboxTxBuffer[2048];//data sent to ESP module
 	volatile	uint32_t		UzeboxTxBufferPos;//position for Uzebox to write next byte	
 	volatile	bool 	UzeboxTxRequested;//ESP module requests we put Tx data into ESP Rx buffer(it will not touch it until we clear this flag)
 	
@@ -53,7 +54,7 @@ public:
 	volatile	uint32_t	UzeboxRxBufferPos;//position to read from
 	volatile	uint32_t	UzeboxRxBufferBytes;//number of unread bytes
 	volatile	uint32_t	Decoherence;
-	volatile	uint32_t	DecoherenceLimit;//number of cycles until last forced sync
+	/*volatile*/	uint32_t	DecoherenceLimit;//number of cycles until last forced sync
 
 	uint32_t			ServerTimer;//the amount of time we have waited for an accept()
 	uint32_t			ServerTimeout;//the time to wait on accepting a connection(real thing is not indefinite, limit is ~7200 seconds)
@@ -72,27 +73,27 @@ public:
 	uint8_t		PrevResetPinState;
 	uint8_t		pad;
 
-	volatile uint32_t		State;
+	/*volatile*/ uint32_t		State;
 	bool			FlashDirty;
 	bool			Ready;
-	
+	uint64_t		totalcycles;//temp test hack
 	
 	uint8_t UCSR0A;	//
 	uint8_t UCSR0B;
 	uint8_t UCSR0C;
 	
 	uint8_t		UartScramblerPos;
-	uint32_t		UartTxDelayCycles;//Uzebox just sent, how many cycles until we can send again(based on baud rate)
-	uint32_t 		UartRxDelayCycles;//Uzebox just got a new byte, how many cycles until we could get a new byte(based on baud rate)
-	uint32_t		UartBaudDelayCycles;//the amount of cycles to wait, updated every time baud rate or UART settings are changed
+	uint32_t		UartTxDelayCycles;//Uzebox just sent, how many cycles until we can send again(based on baud rate, module never touches this)
+	uint32_t 		UartRxDelayCycles;//Uzebox just got a new byte, how many cycles until we could get a new byte(based on baud rate, module never touches?)
+	uint32_t		UartBaudDelayCycles;//the amount of cycles to wait, updated every time baud rate or UART settings are changed(mmodule never touches this)
 
 	uint32_t		UartATMode;//waiting for an AT command, waiting for bytes for an AT+CIPSEND, or waiting some milliseconds to send packet for AT+CIPSENDEX?
+	uint32_t		UartATState;//0 = AT, 1 = binary mode
 	uint8_t 		baud_bits0,baud_bits1;
 
 	uint32_t		SendToSocket;	//the current socket an "AT+CIPSEND/X" is dealing with, that is, where to send the payload when received
-	uint32_t		SendXTimer;	//the amount of milliseconds elapsed for an "AT+CIPSENDX", where we send whatever is received every time period
 	uint32_t		CipMode;
-
+	uint32_t		BinaryState;
 	int32_t		Socks[5];
 	int32_t		PingSock;
 	uint32_t		Protocol[5];
@@ -107,13 +108,13 @@ public:
 
 	char			SoftAPName[64];
 	char			SoftAPPass[64];
-	char			SoftAPMAC[16+1];
-	char			SoftAPIP[16+1];
+	char			SoftAPMAC[32];
+	char			SoftAPIP[24];
 	uint32_t		SoftAPChannel;
 	uint32_t		SoftAPEncryption;
 
-	char			StationMAC[16+1];//todo
-	char			StationIP[16+1];
+	char			StationMAC[32];//todo
+	char			StationIP[24];
 	
 
 	void	Tick();
@@ -164,6 +165,7 @@ public:
 	void UCSR0D_Write(uint8_t b);
 	void ClearATCommand();
 	void TimeStall(uint32_t cycles);
+
 	//AT handlers
 	void AT_AT();
 	void AT_RST();
@@ -227,7 +229,6 @@ public:
 
 
 
-#define ESP_UZEBOX_CORE_FREQUENCY	(8*3.579545)//cycles per second
 #define ESP_AP_CONNECTED		1	//connected to wifi so AT+CIPSEND is valid
 #define ESP_AWAITING_SEND		2	//
 #define ESP_START_UP			8	//rebooting
@@ -262,12 +263,13 @@ public:
 
 //Timing(some of this is just guesses from memory with no research, TODO)
 
-#define	ESP_RESET_BOOT_DELAY			5*(ESP_UZEBOX_CORE_FREQUENCY/4)//how long after a reset it takes to become ready
+#define 	ESP_UZEBOX_CORE_FREQUENCY		28636363UL//(8*3.579545)*1000000//cycles per second
+#define	ESP_RESET_BOOT_DELAY			ESP_UZEBOX_CORE_FREQUENCY+(ESP_UZEBOX_CORE_FREQUENCY>>2)//how long after a reset it takes to become ready
 #define	ESP_AT_MS_DELAY				ESP_UZEBOX_CORE_FREQUENCY/1000UL//1 millisecond
 #define	ESP_AT_OK_DELAY				ESP_AT_MS_DELAY//how quickly a response to a simply command like "AT\r\n" takes to send "OK\r\n"
-#define 	ESP_SENDEX_DELAY			25*ESP_AT_MS_DELAY//milliseconds per packet send when AT+CIPSENDEX is active
 #define	ESP_AT_CWLAP_DELAY			4000*ESP_AT_MS_DELAY
 #define	ESP_AT_CWJAP_DELAY			1800*ESP_AT_MS_DELAY
+#define	ESP_UNVARNISHED_DELAY			20UL*ESP_AT_MS_DELAY
 #define	ESP_AT_RST_DELAY			ESP_AT_OK_DELAY
 
 
@@ -280,6 +282,7 @@ public:
 const unsigned char UartScrambler[] = {//random values to add to UART data when baud divisors do not match, not realistic, but functionally it works
 44,119,83,4,172,183,28,169,191,3,54,158,224,161,94,228,82,76,214,123,209,139,160,31,216,186,20,5,117,225,90,51,32,89,173,246,95,34,81,198,61,70,231,73,100,140,88,245,35,27,166,200,235,128,193,189,11,30,43,2,126,201,164,85,253,8,109,250,16,84,67,239,49,174,175,53,157,39,136,33,152,241,112,242,40,10,101,18,130,50,103,132,113,171,255,71,108,116,162,22,254,142,151,55,86,182,222,170,69,45,48,65,247,24,60,141,17,13,93,56,15,25,177,167,77,21,122,74,29,97,149,63,62,222,134,176,238,120,217,115,234,125,66,23,114,99,212,131,184,213,194,252,79,190,197,244,104,155,233,137,168,6,46,251,150,127,129,121,146,72,37,223,98,26,106,124,138,96,220,1,180,159,102,203,156,110,179,230,145,143,80,12,147,0,133,42,58,78,206,148,135,105,195,36,144,9,38,19,92,165,14,68,91,236,57,249,87,59,7,163,208,211,202,227,153,118,154,47,111,107,187,205,219,178,192,41,215,221,248,229,226,240,237,232,64,204,243,52,181,210,185,188,199,218,75,207
 };
+
 
 
 

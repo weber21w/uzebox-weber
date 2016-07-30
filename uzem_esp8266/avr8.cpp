@@ -729,46 +729,14 @@ inline void avr8::draw_memorymap()
 u8 avr8::exec(bool disasmOnly,bool verbose)
 {
 
-/*	if (enableGdb == true)
-	{
-		gdb->exec();
-	
-		// Check if the next instruction match a GDB breakpoint
-		Breakpoints::iterator ii;
-  		if ((ii= find(gdb->BP.begin(), gdb->BP.end(), pc)) != gdb->BP.end())
-		{
-			gdbBreakpointFound = true;
-			return 0;
-		}
-	}
-*/
 	if (state == CPU_STOPPED)
 		return 0;
-/*
-#if DISASM
-	// Built-in breakpoints
-	if (pc == breakpoint)
-	{
-		singleStep = nextSingleStep = true;
-		return 0;
-	}	
-	// set a breakpoint on the printf to halt at a given address.
-	// if (pc == 0x33d3)
-	//	printf("hit\n");
-#endif
-*/
 	u16 lastpc = pc;
 	u16 insn = progmem[pc++];	
 	u8 cycles = 1;				// Most insns run in one cycle, so assume that
 	u8 Rd, Rr, R, d, CH;
 	u16 uTmp, Rd16, R16;
 	s16 sTmp;
-#if DISASM
-	char insnBuf[32];
-	sprintf(insnBuf,"?$%04x",insn);
-#endif
-
-//	progmemviz[lastpc] |= VIZ_WRITE;
 
 	// The "DIS" macro must be first, or at least before any side effects on machine state occur.  
 	// This is because depending on the configuration, we can build one of three ways; no 
@@ -1584,71 +1552,6 @@ u8 avr8::exec(bool disasmOnly,bool verbose)
 	}
 
 		//printf("$%04x [%04x]  %-23.23s",lastpc,progmem[lastpc],insnBuf);
-#if DISASM
-	// Don't spew disassembly during interrupts
-	if (singleStep && !interruptLevel)
-	{
-		printf("$%04x [%04x]  %-23.23s",lastpc,progmem[lastpc],insnBuf);
-		if (!disasmOnly)
-		{
-			printf("[%c%c%c%c%c%c%c%c]",
-				BIT(SREG,SREG_I)?'I':' ',
-				BIT(SREG,SREG_T)?'T':' ',
-				BIT(SREG,SREG_H)?'H':' ',
-				BIT(SREG,SREG_S)?'S':' ',
-				BIT(SREG,SREG_V)?'V':' ',
-				BIT(SREG,SREG_N)?'N':' ',
-				BIT(SREG,SREG_Z)?'Z':' ',
-				BIT(SREG,SREG_C)?'C':' ');
-			if (verbose)
-			{
-				putchar('\n');
-				for (int i=0; i<32; i++)
-				{
-					printf("r%02d:%02x ",i,r[i]);
-					if (i == 7)
-						putchar('\n');
-					if (i == 15)
-						printf("  NXTPC:%04x  CYC:%d\n",pc,cycles);
-					else if (i == 23)
-						printf("  SP:%04x\n",SP);
-					else if (i == 31)
-						printf("  X:%04x Y:%04x Z:%04x\n",X,Y,Z);
-				}
-				putchar('\n');
-			}
-			else
-			{
-				char *rs = insnBuf;
-				while ((rs = strchr(rs,'r')) != NULL)
-				{
-					int rn = atoi(++rs);
-					printf(" r%02d:%02x",rn,r[rn]);
-				}
-				// These dumb tests are sufficient because it just so happens that
-				// no opcodes (well, after a cursory inspection anyway) contain X, Y, or Z.
-				if (strchr(insnBuf,'X'))
-					printf(" X:%04x",X);
-				if (strchr(insnBuf,'Y'))
-					printf(" Y:%04x",Y);
-				if (strchr(insnBuf,'Z'))
-					printf(" Z:%04x",Z);
-				// Could just set a flag above instead of this.
-				if (strstr(insnBuf,"MUL") || strstr(insnBuf,"SPM"))
-					printf(" r1:r0:$%02x%02x",r1,r0);
-				if (strstr(insnBuf,"CALL")||strstr(insnBuf,"RET")||strstr(insnBuf,"PUSH")||strstr(insnBuf,"POP"))
-					printf(" SP:%04x",SP);
-				putchar('\n');
-			}
-		}
-		else	// If we're disassembling, compute the next pc regardless of branches.
-		{
-			pc = lastpc + get_insn_size(insn);
-			putchar('\n');
-			//return;
-		}
-	}
-#endif
 	update_hardware(cycles);
 
 	return cycles;
@@ -1657,9 +1560,6 @@ u8 avr8::exec(bool disasmOnly,bool verbose)
 
 void avr8::trigger_interrupt(int location)
 {
-#if DISASM
-		printf("INTERRUPT %d triggered at cycleCounter = %u\n", (location/2), cycleCounter);
-#endif
 
 		// clear interrupt flag
 		set_bit(SREG,SREG_I,0);
@@ -2263,7 +2163,10 @@ void avr8::load_joystick_file(const char* filename)
 ////////*********************************************
 
 inline void avr8::update_uart(int cycles){
-
+static uint32_t totalcycles = 0;
+totalcycles += cycles;
+//printf("%d\n",totalcycles);
+	ESP.ModuleClock += cycles;//synchronize system clocks(volatile)
 
 	//****Emulate transmit timing
 	//***************************
@@ -2311,7 +2214,7 @@ inline void avr8::update_uart(int cycles){
 //	if(!ESP.UzeboxRxBufferBytes){//we have no data from module, and we can now receive more. See if there is some
 		ESP.Decoherence += cycles;
 
-		if(ESP.Decoherence > ESP.DecoherenceLimit){
+		if(ESP.Decoherence >= ESP.DecoherenceLimit){
 			while(ESP.Decoherence){//stall emulation until the module thread catches up, otherwise we can get incorrect program behavior
 
 			//	Sleep(0);//yield to another thread?
@@ -2323,7 +2226,6 @@ inline void avr8::update_uart(int cycles){
 	//****************************
 
 	//ESP.ResetPinState = (io[ports::DDRD] & (1<<3));	//update reset pin state//TODO FASTER TO DO IN IO READS??!
-	ESP.ModuleClock += cycles;
 /*
 	if(ESP.BusyCycles){
 		if(ESP.BusyCycles < cycles)
@@ -2424,14 +2326,6 @@ void avr8::update_hardware(int cycles)
                 spiClock -= cycles;
             }
         }
-            /*        
-        //HACK: instantaneous SPI access        
-        if(spiTransfer && spiClock > 0){
-            update_spi();
-            SPSR |= 0x80; // set interrupt
-            spiTransfer = 0;
-            spiClock = 0;
-        }*/
     
         // test for interrupt (enable and interrupt flag for SPI)
         if((SPCR & 0x80) && (SPSR & 0x80)){
@@ -2502,6 +2396,14 @@ void avr8::update_hardware(int cycles)
 		}
 	}
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+update_uart(cycles);
+//ESP.UzeboxUpdateUart(cycles);
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #if GUI && VIDEO_METHOD == 1
 	if (scanline_count >= 0 && current_cycle < 1440)
 	{
@@ -2515,13 +2417,6 @@ void avr8::update_hardware(int cycles)
 		}
 	}
 #endif
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////
-update_uart(cycles);
-//ESP.UzeboxUpdateUart(cycles);
-/////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 static u8 dummy_sector[512];
