@@ -3,13 +3,15 @@
 
 #define CLIENTCOM_FIRST_COMMAND 'A'
 #define CLIENTCOM_LOGIN         CLIENTCOM_FIRST_COMMAND
-#define CLIENTCOM_JOIN_ANY       'B'//if we previously agreed to play with someone, join that room
+#define CLIENTCOM_JOIN_ANY      'B'//if we previously agreed to play with someone, join that room
 #define CLIENTCOM_SET_STATE     'C'
 #define CLIENTCOM_SET_FLAG      'D'
 #define CLIENTCOM_UNSET_FLAG    'E'
 #define CLIENTCOM_ROOM_DETAILS  'F'
 #define CLIENTCOM_PLAYER_DETAIL 'G'
 #define CLIENTCOM_MSG_MASK      'H'//a mask that determines where our sends go to
+#define CLIENTCOM_SET_GAME      'I'
+#define CLIENTCOM_REQUEST_BOT   'J'
 #define CLIENTCOM_GAMEPLAY_DATA 'W'
 
 #define CLIENTCOM_BAD_COMMAND   'X'
@@ -37,13 +39,14 @@ public:
     unsigned char packet_buf[2048];
     unsigned char com_buf[2048];
     unsigned char packet_out[2048];//the packet we are currently building, and will send out when flushed
+    char current_game[16+1];
     unsigned int pbuf_out_pos;
     unsigned int pbuf_pos;
     unsigned int cbuf_pos;
     unsigned int com_bytes;
     unsigned int data_bytes;
     unsigned int command_state;
-    Client *Add(SystemEntry *base);
+    //Client *Add(SystemEntry *base);//done in system class
     void Del();
     int SendString(char *s);
     int SendChar(char c);
@@ -51,6 +54,7 @@ public:
     void Disco();
     void Disco(char *msg);
     int NetSend();
+    void RemoveCommandBytes(int num);
 };
 
 
@@ -80,8 +84,11 @@ void Client::Disco(){
         printf(":Unknown user(no login):");
         PrintIP(&addr);
         printf(" disconnected.\n");
-    }else
-        printf(":%s(%s) disconnected.\n",user_ent->name,user_ent->realname);
+    }else{
+        printf(":%s(%s):",user_ent->name,user_ent->realname);
+        PrintIP(&addr);
+        printf(" disconnected.\n");
+    }
 
 
     closesocket(sock);
@@ -109,15 +116,18 @@ int Client::NetSend(){
     return 0;
 }
 
-Client *Client::Add(SystemEntry *base){
-    if(next != NULL)
-        return next->Add(base);
+void Client::RemoveCommandBytes(int num){
+    int total = com_bytes-num;
+    if(total <= 0){
+     //   printf("ERROR:RemoveCommandBytes() <= 0\n");
+       // return;
+    }
+    int i;
+    for(i=0;i<total;i++)
+        com_buf[i] = com_buf[i+num];
+    com_bytes -= num;
+    com_buf[com_bytes] = '\0';
 
-    next = new Client;
-    next->prev = this;
-    next->system_base = base;
-    next->command_state = CLIENTCOM_LOGIN;
-    return next;
 }
 
 

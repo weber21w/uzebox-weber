@@ -15,7 +15,7 @@ using namespace std;
 #include "defs.hpp"
 #include "system.hpp"
 
-int main(){
+int main(int argc, char **argv[]){
 
     SystemEntry system;//constructor starts everything
 /*
@@ -40,9 +40,15 @@ return 1;
     system.PrintIP(&system.sock_addr);
     printf("\n");
 
+    printf("Logging server events to file:log.txt(no further console notifications)\n>");
+
+
+//system.GenerateWebPage();
+
+
     while(!system.Update());
 
-    printf("System terminated with code:%d\n",system.critical_err);
+    //printf("\n\nSystem terminated with code:%d\n",system.critical_err);
     return system.critical_err;
 }
 

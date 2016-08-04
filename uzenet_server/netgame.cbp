@@ -30,6 +30,7 @@
 		</Unit>
 		<Unit filename="main.cpp" />
 		<Unit filename="room.hpp" />
+		<Unit filename="score.hpp" />
 		<Unit filename="system.hpp" />
 		<Unit filename="users.hpp" />
 		<Extensions>
