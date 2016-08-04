@@ -72,6 +72,7 @@ public:
 	uint8_t		ResetPinState;
 	uint8_t		PrevResetPinState;
 	uint8_t		pad;
+	uint8_t		RFPower;
 
 	/*volatile*/ uint32_t		State;
 	bool			FlashDirty;
@@ -86,6 +87,10 @@ public:
 	uint32_t		UartTxDelayCycles;//Uzebox just sent, how many cycles until we can send again(based on baud rate, module never touches this)
 	uint32_t 		UartRxDelayCycles;//Uzebox just got a new byte, how many cycles until we could get a new byte(based on baud rate, module never touches?)
 	uint32_t		UartBaudDelayCycles;//the amount of cycles to wait, updated every time baud rate or UART settings are changed(mmodule never touches this)
+	uint8_t		UartDataBits;
+	uint8_t		UartStopBits;
+	uint8_t		UartParity;
+	uint8_t		UartFlowControl;
 
 	uint32_t		UartATMode;//waiting for an AT command, waiting for bytes for an AT+CIPSEND, or waiting some milliseconds to send packet for AT+CIPSENDEX?
 	uint32_t		UartATState;//0 = AT, 1 = binary mode
@@ -95,6 +100,8 @@ public:
 	uint32_t		CipMode;
 	uint32_t		BinaryState;
 	int32_t		Socks[5];
+	uint8_t		TCPSendBuf[4][2048];
+	uint32_t		TCPSegID[4];//reset with "AT+CIPBUFRESET"
 	int32_t		PingSock;
 	uint32_t		Protocol[5];
 	SOCKADDR_IN	SockInfo[5];
@@ -113,9 +120,13 @@ public:
 	uint32_t		SoftAPChannel;
 	uint32_t		SoftAPEncryption;
 
+	char			TransLinkHost[128];
+	uint8_t		TransLinkProto;
+	uint16_t		TransLinkPort;
+
 	char			StationMAC[32];//todo
 	char			StationIP[24];
-	
+	FILE*			ConfigFile;
 
 	void	Tick();
 
@@ -217,6 +228,18 @@ public:
 	void AT_BAD_COMMAND();
 	void AT_BINARY();
 	void AT_DEBUG();
+	void SetFactoryState();
+	void SaveTransLink();
+	void SaveUART();
+	void SaveStationMAC();
+	void SaveStationIP();
+	void SaveSoftAPMAC();
+	void SaveSoftAPIP();
+	void SaveSoftAPCredentials();
+	void SaveDHCP();
+	void SaveMode();
+	void SaveWifiCredentials();
+	void SaveAutoConn();
 
 	void ProcessBinary();
 	int32_t InitializeSocketSystem();
@@ -240,6 +263,10 @@ public:
 #define ESP_ALL_CONNECTIONS	512	//
 #define ESP_INTERNET_ACCESS	1024	//not used?
 #define ESP_LIST_APS			2048	//currently waiting to spit out simulated AP list
+#define ESP_CIPDINFO			4096 //show ip and port information with +IPD messages
+#define ESP_SMARTCONFIG_ACTIVE	4096*2
+#define ESP_AUTOCONNECT		4096*2*2
+
 #define ESP_AS_AP			1	//softAP only mode(cannot be connected to wifi, some restrictions)
 #define ESP_AS_STA			2	//station only mode(cannot be softAP)
 #define ESP_AS_AP_STA			3	//softAP and station mode(some restrictions)
@@ -267,8 +294,9 @@ public:
 #define	ESP_RESET_BOOT_DELAY			ESP_UZEBOX_CORE_FREQUENCY+(ESP_UZEBOX_CORE_FREQUENCY>>2)//how long after a reset it takes to become ready
 #define	ESP_AT_MS_DELAY				ESP_UZEBOX_CORE_FREQUENCY/1000UL//1 millisecond
 #define	ESP_AT_OK_DELAY				ESP_AT_MS_DELAY//how quickly a response to a simply command like "AT\r\n" takes to send "OK\r\n"
-#define	ESP_AT_CWLAP_DELAY			4000*ESP_AT_MS_DELAY
-#define	ESP_AT_CWJAP_DELAY			1800*ESP_AT_MS_DELAY
+#define	ESP_AT_CWLAP_DELAY			4000UL*ESP_AT_MS_DELAY
+#define	ESP_AT_CWLAP_INTER_DELAY		6UL*ESP_AT_MS_DELAY
+#define	ESP_AT_CWJAP_DELAY			1800UL*ESP_AT_MS_DELAY
 #define	ESP_UNVARNISHED_DELAY			20UL*ESP_AT_MS_DELAY
 #define	ESP_AT_RST_DELAY			ESP_AT_OK_DELAY
 

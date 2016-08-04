@@ -136,11 +136,29 @@ void ESPModule::Tick(){//must be this format to be called as a thread
 			continue;
 
 //printf("[");
-		if(RxAwaitingTime){
-			ProcessAT();
-			continue;
+		if(RxAwaitingTime){//unvarnished mode is active
+
+//TODO CAN THIS CAUSE BUFFER OVERFLOW IF UZEBOX THREAD STALLS??
+			if(RxAwaitingTime > (ESP_UNVARNISHED_DELAY)){
+//printf("*");
+				if(RxBufferBytes == 3 && !strncmp((char *)&CommandBuffer,"+++",3)){//end unvarnished mode
+					printf("End unvarnished transmission mode\n");
+					RxAwaitingTime = 0;//disable unvarnished mode when we receive a packet consisting of only "+++"
+					RxBufferBytes = 0;
+					return;
+				}else
+					RxAwaitingTime -= ESP_UNVARNISHED_DELAY;
+
+				if(RxBufferBytes){
+					//printf("sent unvarnished:%d,%s\n",RxBufferBytes,RxBuffer);
+					NetSend(SendToSocket,(const char *)RxBuffer,RxBufferBytes,0);
+					RxAwaitingBytes = 0;
+					RxBufferBytes = 0;
+				}
+			}
+
 		}else if(RxBufferNewData && !UzeboxRxBufferBytes){//Uzebox is still behind on UART time, wait
-			ProcessAT();
+			ProcessAT();//big heavy function
 			RxBufferNewData = 0;
 			continue;
 		}
@@ -355,6 +373,7 @@ void ESPModule::AT_CWLAP(){//list all available wifi access points
 //	printf("%s\n",fake_ap_name);
 		sprintf(ap_buffer,"+CWLAP:(1,\"%s\",-%i,\"%02x:%02x:%02x:%02x:%02x:%02x\")\r\n",fake_ap_name[i],rand()%100,rand()%256,rand()%256,rand()%256,rand()%256,rand()%256,rand()%256);
 		TxP(ap_buffer);
+		TimeStall(ESP_AT_CWLAP_INTER_DELAY);
 	}
 asm volatile("": : :"memory");//memory fence
 	TxP_OK();
@@ -1077,6 +1096,11 @@ uint32_t ESPModule::VerifyMACString(uint32_t off){//pass the offset to the first
 
 }
 
+void ESPModule::SaveStationMAC(){
+
+
+}
+
 void ESPModule::AT_CIPSTAMAC(){//set MAC address of station, also "AT+CIPSTAMAC_CUR" and "AT+CIPSTAMAC_DEF"
 	printf("CIPSTAMAC\n");
 	//https://github.com/espressif/ESP8266_AT/wiki/CIPSTAMAC
@@ -1227,12 +1251,53 @@ void ESPModule::AT_CIFSR(){
 
 void ESPModule::AT_UART(){//also "AT+UART_CUR" and "AT+UART_DEF"
 
+	uint32_t b = Atoi((char *)&CommandBuffer[8]);
+	int i=0;
+	for(i=0;i<10;i++){
+		if(CommandBuffer[8+i] < '0' || CommandBuffer[8+i] > '9')
+			break;
+	}
+	if(i == 10 || CommandBuffer[8+i] != ','){
+		TxP_ERROR();
+		return;
+	}
+
+//	for(i=0;i<sizeof(SupportedBaudRates);i++){
+		
+//	}
 
 }
 
 void ESPModule::AT_RFPOWER(){
+	//range 0 ~ 82, unit:0.25dBm
+	if(!strncmp((char*)&CommandBuffer[3+7],"?\r\n",3)){//query only...not supported on real hardware?
+		TxP("+RFPOWER:\"");
+		TxI(RFPower);
+		TxP("\"\r\n");
 
+	}else{//set
+		char c1 = CommandBuffer[3+8];
+		char c2 = CommandBuffer[3+9];
+		char c3 = CommandBuffer[3+10];
 
+		if(CommandBuffer[3+7] != '=' || c1 < '0' || c1 > '9' || (c2 != '\r' && (c2 < '0' || c2 > '9')) || (c2 == '\r' && c3 != '\n')){ 
+			TxP_ERROR();
+			return;
+		}
+
+		int p = CommandBuffer[3+8] - '0';
+		if(CommandBuffer[3+9] != '\r')
+			p += CommandBuffer[3+9]-'0';
+		
+		if(p > 82){//out of range
+			TxP_ERROR();
+			return;
+		}
+
+		RFPower = p;
+	}
+	
+	TxP_OK();
 }
 
 void ESPModule::AT_RFVDD(){
@@ -1240,14 +1305,58 @@ void ESPModule::AT_RFVDD(){
 
 }
 
+void ESPModule::SetFactoryState(){
+	DefaultBaudDivisor = 185;//9600 baud
+
+	memset(SoftAPName,'\0',sizeof(SoftAPName));
+	sprintf(SoftAPName,"Uzem SoftAP");
+		
+	memset(SoftAPPass,'\0',sizeof(SoftAPPass));
+	sprintf(SoftAPPass,"password");
+		
+	memset(SoftAPMAC,'\0',sizeof(SoftAPMAC));
+	sprintf(SoftAPMAC,"ec:44:4a:67:cb:d8");
+		
+	memset(SoftAPIP,'\0',sizeof(SoftAPIP));
+	sprintf(SoftAPIP,"10.0.0.1");
+
+	memset(WifiName,'\0',sizeof(WifiName));
+	sprintf(WifiName,"Uzem Wifi");
+
+	memset(WifiPass,'\0',sizeof(WifiPass));
+	sprintf(WifiPass,"password");
+
+	memset(WifiMAC,'\0',sizeof(WifiMAC));
+	sprintf(WifiMAC,"ec:44:4a:67:cb:d8");
+
+	memset(WifiIP,'\0',sizeof(WifiIP));
+	sprintf(WifiIP,"10.0.0.1");
+}
+
+
 void ESPModule::AT_RESTORE(){
-
-
+	
+	SetFactoryState();
+	SaveConfig();
+	TxP_OK();
+	AT_RST();
 }
 
 
 void ESPModule::AT_CIPDINFO(){
-
+	if(!strncmp((char*)&CommandBuffer[3+8],"?\r\n",3)){//query only...not supported on real hardware?
+		TxP("+CIPDINFO:");
+		TxI((State & ESP_CIPDINFO)?1:0);
+		TxP("\r\n");
+	}else if(CommandBuffer[3+8] == '=' && (CommandBuffer[3+9] == '0' || CommandBuffer[3+9] == '1') && CommandBuffer[3+10] == '\r' && CommandBuffer[3+11] == '\n'){
+		
+		if(CommandBuffer[3+9] == '0')
+			State &= ~ESP_CIPDINFO;
+		else
+			State |= ESP_CIPDINFO;
+		TxP_OK();
+	}else
+		TxP_ERROR();
 
 }
 
@@ -1285,51 +1394,132 @@ void ESPModule::AT_PING(){
 
 
 void ESPModule::AT_CWAUTOCONN(){
-
-
+	if(!strncmp((char*)&CommandBuffer[3+10],"?\r\n",3)){//query only...not supported on real hardware?
+		TxP("+CWAUTOCONN:");
+		TxI((State & ESP_AUTOCONNECT)?1:0);
+		TxP("\r\n");
+	}else if(CommandBuffer[3+10] == '=' && (CommandBuffer[3+11] == '0' || CommandBuffer[3+11] == '1') && CommandBuffer[3+12] == '\r' && CommandBuffer[3+13] == '\n'){
+		if(CommandBuffer[3+11] == '0')
+			State &= ~ESP_AUTOCONNECT;
+		else
+			State |= ESP_AUTOCONNECT;
+		TxP_OK();
+	}else
+		TxP_ERROR();
 }
 
+
+void ESPModule::SaveTransLink(){
+
+}
 
 void ESPModule::AT_SAVETRANSLINK(){
 
+	char host[160];
+	int i,j;
+	for(i=20;i<20+128;i++){
+		if(CommandBuffer[i] == '"')
+			break;
+		host[i-20] = CommandBuffer[i];
+		host[(i-20)+1] = '\0';
+	}
 
+	char c1 = CommandBuffer[17];//1 or 0, start unvarnished or not
+	char c2 = CommandBuffer[i];
+	char c3 = CommandBuffer[i+1];
+
+	//"AT+SAVETRANSLINK=1,"uzebox.net",5800,"TCP"\r\n
+
+	int port = Atoi((char *)&CommandBuffer[i+3]);//get the port number
+	
+	if(c2 != '"' || c3 != ',' || (c1 != '0' && c1 != '1') || CommandBuffer[18] != ',' || CommandBuffer[19] != '"' || port < 1 || port > 65535){
+		TxP_ERROR();
+		return;
+	}
+
+	for(j=i+3;j<i+3+6;j++){//make sure the port number is followed by ,"
+		if(CommandBuffer[j] == ',' && CommandBuffer[j+1] == '"')
+			break;
+	}
+	
+	if(j == i+3+6 || CommandBuffer[j+5] != '"' || CommandBuffer[j+6] != '\r' || CommandBuffer[j+7] != '\n'){
+		TxP_ERROR();;
+		return;
+	}
+
+	int proto = 0;
+
+	if(!strncmp((const char *)&CommandBuffer[j+2],"TCP",3)){
+		proto = 0;		
+	}else if(!strncmp((const char *)&CommandBuffer[j+2],"UDP",3)){
+		proto = 1;
+	}else{
+		TxP_ERROR();
+		return;
+	}
+
+	TransLinkProto = (proto == 0)?ESP_PROTO_TCP:ESP_PROTO_UDP;
+	strcpy(TransLinkHost,host);
+	TransLinkPort = port;
+	SaveTransLink();
+		
+	TxP_OK();
+	
 }
 
 void ESPModule::AT_CIPBUFRESET(){
+	//fails if not all segments are sent yet or no connection		
+	
+	int connection = 255;
 
+	if(!(State & ESP_MUX)){//single mode
+		if(!strncmp((const char *)&CommandBuffer[14],"\r\n",2))
+			connection = 0;
 
-
+	}else{//multiple connection mode
+		if(!strncmp((const char *)&CommandBuffer[16],"\r\n",2)){
+			if(CommandBuffer[15] > '0' && CommandBuffer[13] < '9')
+				connection = (CommandBuffer[13]-'0')+1;
+		}
+	}
+	
+	if(connection == 255)
+		TxP_ERROR();
+	else{
+		TCPSegID[connection] = 0;
+		TxP_OK();
+	}
 }
 
 void ESPModule::AT_CIPCHECKSEQ(){
-
+	AT_BAD_COMMAND();
 
 }
 
 void ESPModule::AT_CIPBUFSTATUS(){
-
+	AT_BAD_COMMAND();
 
 }
 
 void ESPModule::AT_CIPSENDBUF(){
-
+	//TCPSendBuf[] = ...
 
 }
 
 void ESPModule::AT_SENDEX(){
-
+	AT_BAD_COMMAND();
 
 }
 
 
 
 void ESPModule::AT_CWSTARTSMART(){
-
+	State |= ~ESP_SMARTCONFIG_ACTIVE;
 
 }
 
 void ESPModule::AT_CWSTOPSMART(){
-
+	State &= ~ESP_SMARTCONFIG_ACTIVE;
 }
 
 void ESPModule::AT_CIUPDATE(){
@@ -1468,7 +1658,7 @@ void ESPModule::AT_DEBUG(){//Does not exist on any known firmware(yet), a pseudo
 }
 
 
-void ESPModule::ProcessAT(){//look at the byte stream Uzebox has sent, search for completed AT commands, handle sending packets out
+inline void ESPModule::ProcessAT(){//look at the byte stream Uzebox has sent, search for completed AT commands, handle sending packets out
 
 	//TODO PROCESS BINARY COMMANDS INSTEAD OF AT?!
 
@@ -1477,32 +1667,6 @@ void ESPModule::ProcessAT(){//look at the byte stream Uzebox has sent, search fo
 		if(!RxAwaitingBytes)
 			return;
 		ProcessBinary();
-		return;
-	}
-
-	if(RxAwaitingTime){//unvarnished transmission mode is active
-//		printf("!");
-//TODO CAN THIS CAUSE BUFFER OVERFLOW IF UZEBOX THREAD STALLS??
-
-		if(RxAwaitingTime > (ESP_UNVARNISHED_DELAY)){
-//printf("*");
-			if(RxBufferBytes == 3 && !strncmp((char *)&CommandBuffer,"+++",3)){//end unvarnished mode
-				printf("End unvarnished transmission mode\n");
-				RxAwaitingTime = 0;//disable unvarnished mode when we receive a packet consisting of only "+++"
-				RxBufferBytes = 0;
-				return;
-			}else
-				RxAwaitingTime -= ESP_UNVARNISHED_DELAY;
-
-			if(RxBufferBytes){
-				//printf("sent unvarnished:%d,%s\n",RxBufferBytes,RxBuffer);
-				NetSend(SendToSocket,(const char *)RxBuffer,RxBufferBytes,0);
-				RxAwaitingBytes = 0;
-				RxBufferBytes = 0;
-			}
-		}else
-		//	printf("-");
-
 		return;
 	}
 
@@ -1668,7 +1832,7 @@ void ESPModule::ProcessAT(){//look at the byte stream Uzebox has sent, search fo
 
 
 void ESPModule::ProcessIPD(){//get internet data, put it to Tx
-
+//printf("I");
 	int32_t i,num_bytes;
 	for(i=0;i<4;i++){
 
@@ -1676,7 +1840,7 @@ void ESPModule::ProcessIPD(){//get internet data, put it to Tx
 			continue;
 
 		//Recv() automatically handles UDP or TCP...TODO
-		if((num_bytes = NetRecv(i,(char *)&RxPacket,sizeof(RxPacket),0)) == -1){//no data is available or socket error
+		if((num_bytes = NetRecv(i,(char *)&RxPacket,sizeof(RxPacket),0)) == ESP_SOCKET_ERROR){//no data is available or socket error
 			if(GetLastError() != ESP_WOULD_BLOCK){//error, disconnected?
 				/*if(DebugLevel > 0)*/	Debug("recv socket error",GetLastError());
 				if(false && (UartATState & ESP_MODE_BINARY)){
@@ -1694,7 +1858,18 @@ void ESPModule::ProcessIPD(){//get internet data, put it to Tx
 			}
 			continue;
 		}
+printf("Got packet,");
+		RxPacket[num_bytes] = '\0';
+		if(RxAwaitingTime){//unvarnished mode, sent it right away
+			printf("Got unvarnished:%s\n",RxPacket);
+			int j;
+			for(j=0;j<num_bytes;j++)
+				TxBuffer[TxBufferPos++] = RxPacket[j];
+			//TODO avoid buffer overflow ;)
+			return;
+		}
 		
+
 		//got a packet, with num_bytes length, buffer it and send it when possible
 				
 		/*if(DebugLevel > 0)*/	Debug("Got packet, num bytes:",num_bytes);
@@ -1803,31 +1978,7 @@ void ESPModule::LoadConfig(){
 			Debug("Created ESP8266.ini settings file",0);
 		fclose(f);
 
-		DefaultBaudDivisor = 185;//9600 baud
-
-		memset(SoftAPName,'\0',sizeof(SoftAPName));
-		sprintf(SoftAPName,"Uzem SoftAP");
-		
-		memset(SoftAPPass,'\0',sizeof(SoftAPPass));
-		sprintf(SoftAPPass,"password");
-		
-		memset(SoftAPMAC,'\0',sizeof(SoftAPMAC));
-		sprintf(SoftAPMAC,"01:23:45:67:89:AB");
-		
-		memset(SoftAPIP,'\0',sizeof(SoftAPIP));
-		sprintf(SoftAPIP,"10.0.0.1");
-
-		memset(WifiName,'\0',sizeof(WifiName));
-		sprintf(WifiName,"Uzem Wifi");
-
-		memset(WifiPass,'\0',sizeof(WifiPass));
-		sprintf(WifiPass,"password");
-
-		memset(WifiMAC,'\0',sizeof(WifiMAC));
-		sprintf(WifiMAC,"12:34:56:78:9A:BC");
-
-		memset(WifiIP,'\0',sizeof(WifiIP));
-		sprintf(WifiIP,"10.0.0.1");
+		SetFactoryState();
 		SaveConfig();
 
 	}else{// if(f != NULL){//file exists, load wifi credentials and mac address	
