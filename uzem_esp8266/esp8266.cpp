@@ -1309,28 +1309,28 @@ void ESPModule::SetFactoryState(){
 	DefaultBaudDivisor = 185;//9600 baud
 
 	memset(SoftAPName,'\0',sizeof(SoftAPName));
-	sprintf(SoftAPName,"Uzem SoftAP");
+	sprintf(SoftAPName,"Uzem SoftAP\0");
 		
 	memset(SoftAPPass,'\0',sizeof(SoftAPPass));
-	sprintf(SoftAPPass,"password");
+	sprintf(SoftAPPass,"password\0");
 		
 	memset(SoftAPMAC,'\0',sizeof(SoftAPMAC));
-	sprintf(SoftAPMAC,"ec:44:4a:67:cb:d8");
+	sprintf(SoftAPMAC,"ec:44:4a:67:cb:d8\0");
 		
 	memset(SoftAPIP,'\0',sizeof(SoftAPIP));
-	sprintf(SoftAPIP,"10.0.0.1");
+	sprintf(SoftAPIP,"10.0.0.1\0");
 
 	memset(WifiName,'\0',sizeof(WifiName));
-	sprintf(WifiName,"Uzem Wifi");
+	sprintf(WifiName,"Uzem Wifi\0");
 
 	memset(WifiPass,'\0',sizeof(WifiPass));
-	sprintf(WifiPass,"password");
+	sprintf(WifiPass,"password\0");
 
 	memset(WifiMAC,'\0',sizeof(WifiMAC));
-	sprintf(WifiMAC,"ec:44:4a:67:cb:d8");
+	sprintf(WifiMAC,"ec:44:4a:67:cb:d8\0");
 
 	memset(WifiIP,'\0',sizeof(WifiIP));
-	sprintf(WifiIP,"10.0.0.1");
+	sprintf(WifiIP,"10.0.0.1\0");
 }
 
 
@@ -1543,7 +1543,7 @@ void ESPModule::AT_RST(){
 
 	State &= ~ESP_DID_FIRST_TICK;//module will reset as soon as the main tick iterates
 	WifiTimer = 1;//now the module will take a bit to reconnect to the Wifi AP
-	WifiDelay = ESP_AT_CWJAP_DELAY+((rand()%1000)*ESP_AT_MS_DELAY);
+	//WifiDelay = ESP_AT_CWJAP_DELAY;//+((rand()%1000)*ESP_AT_MS_DELAY);
 }
 
 
@@ -1968,10 +1968,10 @@ void ESPModule::LoadConfig(){
 
 	FlashDirty = 0;
 //printf("c");
-	FILE *f = fopen("ESP8266.ini","r");
+	FILE *f = fopen("ESP8266.ini","rb");
 	if(f == NULL){
 		Debug("\nESP8266.ini settings file does not exist",0);
-		f = fopen("ESP8266.ini","w");
+		f = fopen("ESP8266.ini","wb");
 		if(f == NULL)//can't create it
 			Debug("Failed to create ESP8266.ini, settings will not be saved",0);
 		else
@@ -2005,7 +2005,7 @@ void ESPModule::LoadConfig(){
 			printf("SoftAPPass:\"%s\"\n",SoftAPPass);
 			printf("SoftAPMAC:\"%s\"\n",SoftAPMAC);
 			printf("SoftAPIP:\"%s\"\n",SoftAPIP);
-			printf("Default Baud Divisor:%d",DefaultBaudDivisor);
+			printf("Default Baud Divisor:%d\n",DefaultBaudDivisor);
 
 		}
 		fclose(f);
@@ -2019,7 +2019,7 @@ void ESPModule::SaveConfig(){
 
 	FlashDirty = 0;
 
-	FILE *f = fopen("ESP8266.ini","w");
+	FILE *f = fopen("ESP8266.ini","wb");
 	if(f == NULL){
 	//	Debug("Can't open ESP8266.ini to save settings",0);
 		return;
@@ -2236,6 +2236,8 @@ int ESPModule::HandleReset(){
 		PrevResetPinState = 1;
 		ResetUart();
 		TimeStall(ESP_RESET_BOOT_DELAY);
+		WifiTimer = 1;
+		WifiDelay = ESP_AT_CWJAP_DELAY;
 		ResetUart();//we are not listening, we wont get to read any data during this process
 	}
 	
@@ -2418,6 +2420,7 @@ asm volatile("": : :"memory");//memory fence
 			if(WifiTimer > WifiDelay){
 				WifiTimer = 0;//turn off counter, do not spawn the message again
 				//TODO MAKE IT CONNECT
+				printf("WIFI GOT IP\n");
 				TxP((const char*)"WIFI GOT IP\r\n");
 			}
 		}

@@ -110,8 +110,8 @@ public:
 
 	char			WifiName[64];
 	char			WifiPass[64];
-	char			WifiMAC[16+1];
-	char			WifiIP[16+1];
+	char			WifiMAC[32];
+	char			WifiIP[24];
 
 	char			SoftAPName[64];
 	char			SoftAPPass[64];
@@ -300,7 +300,7 @@ public:
 #define	ESP_UNVARNISHED_DELAY			20UL*ESP_AT_MS_DELAY
 #define	ESP_AT_RST_DELAY			ESP_AT_OK_DELAY
 
-
+#define ESP_SOCKET_ERROR		SOCKET_ERROR
 #ifdef _WIN32
 #define ESP_WOULD_BLOCK		WSAEWOULDBLOCK//for our purposes, just means the reason the function failed is there is no data available(or connection requests)
 #else
