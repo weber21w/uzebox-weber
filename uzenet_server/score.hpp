@@ -22,8 +22,8 @@ public:
     char name[15+1];
     char suffix[8];//like "pts" in "1000pts"
     char prefix[8];//like "par" in "par-4"...golf game example..
-    int max_entries;
-    int num_entries;
+    uint32_t max_entries;
+    uint32_t num_entries;
 
     ScoreEntry *entries;
     RomCategory *next;
@@ -88,8 +88,8 @@ public:
     HighScore(){roms = new RomEntry;num_roms=num_categories=0;updated=false;};
     ~HighScore(){};
 
-    int num_roms;
-    int num_categories;
+    uint32_t num_roms;
+    uint32_t num_categories;
 
     bool updated;
     RomEntry *roms;
@@ -161,12 +161,13 @@ RomCategory *HighScore::CreateCategory(char *rn, char *cn, char *pf, char *sf){
     }
 
     rc = re->categories;
-    RomCategory *last;
+    RomCategory *last = NULL;
     while(rc != NULL){
         last = rc;
         rc = rc->next;
     }
-
+    if(last == NULL)
+        return NULL;
     last->next = new RomCategory;
     last->prev = last;
     last->next->next = NULL;
@@ -185,7 +186,8 @@ ScoreEntry *HighScore::CreateEntry(char *rn, char *cn, UserEntry *ue){
         return NULL;
     }
 
-
+ //   return rc;
+    return NULL;
 }
 
 UserEntry *HighScore::FindUserEntryByName(char *name){
@@ -252,7 +254,7 @@ int HighScore::SaveScoreDatabase(){
     RomCategory *c;
     ScoreEntry *s;
 
-    int rcount,ccount,ecount;
+    unsigned int rcount,ccount,ecount;
     rcount = 0;
     //HighScore(1)->Roms(many)->Categories(many,many)->Entries(many,many,many)
     fwrite(&num_roms,sizeof(num_roms),1,f);

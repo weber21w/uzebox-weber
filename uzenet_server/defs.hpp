@@ -136,3 +136,11 @@ void PrintTime(){
     strftime(time_buffer,64,"%x %H:%M:%S",timeinfo);//"%a %b %d %Y %X %z",timeinfo);
     printf(time_buffer);
 }
+
+void SPrintTime(char *fmt,char *buf){
+    time(&rawtime);
+    //TODO
+    char buf2[64];
+    sprintf(buf2,"1:11am");
+    sprintf(buf,"%d%s",strlen(buf2),buf2);
+}

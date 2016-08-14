@@ -12,11 +12,21 @@
 #define CLIENTCOM_MSG_MASK      'H'//a mask that determines where our sends go to
 #define CLIENTCOM_SET_GAME      'I'
 #define CLIENTCOM_REQUEST_BOT   'J'
+#define CLIENTCOM_GET_TIME      'K'
+#define CLIENTCOM_ECHO          'L'//echo the next length specified bytes, so the client knows connection is up and it didn't miss an error message somewhere
+#define CLIENTCOM_GET_USER_NO   'M'//what user number are we(0-8), can be used to determine role/authority of clients
+#define CLIENTCOM_READY_CUE     'N'//request "++" when specified number of players are ready
+#define CLIENTCOM_GET_NAME      'O'
+#define CLIENTCOM_SET_READY     'R'
 #define CLIENTCOM_GAMEPLAY_DATA 'W'
 
 #define CLIENTCOM_BAD_COMMAND   'X'
 #define CLIENTCOM_QUIT          'Z'
 #define CLIENTCOM_LAST_COMMAND  CLIENTCOM_QUIT
+
+
+//CLIENTCOM_ROOM_DETAILS
+#define ROOM_DETAIL_NUM_PLAYERS 'A'
 
 #include "users.hpp"
 
@@ -46,6 +56,8 @@ public:
     unsigned int com_bytes;
     unsigned int data_bytes;
     unsigned int command_state;
+    uint8_t     notify_on_ready;
+    bool ready;//signifies the player or program is ready to proceed communicating with something, somewhere else
     //Client *Add(SystemEntry *base);//done in system class
     void Del();
     int SendString(char *s);

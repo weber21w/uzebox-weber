@@ -47,8 +47,10 @@ public:
     UserEntry *users;
     HighScore *scores;
     RecentHighScore *recent;
+    Bot *bots;
     int num_rooms;
     int num_users;
+    int num_bot_entries;
     char console_title[64];
     char old_console_title[64];
     FILE *flog;
@@ -59,6 +61,7 @@ public:
     int Update();
     int LoadUserData();//load information with user names, password, etc for every registers Uzenet account
     int SaveUserData();
+    int LoadBotData();
     void PrintIP(SOCKADDR_IN *sock_address);
     void PrintTime();
     int GenerateWebPage();
@@ -82,11 +85,14 @@ Client *SystemEntry::AddClient(Room *r){
     while(c->next != NULL){
         c = c->next;
     }
+    printf("Created client\n");
     c->next = new Client;
     c->next->prev = c;
-   // next->system_base = base;
+    c->next->next = NULL;
+    c->next->system_base = this;
     c->next->command_state = CLIENTCOM_LOGIN;
     c->next->user_ent = users;//first entry is the anonymous one until actually logged in
+    c->next->notify_on_ready = 0;
     return c->next;
 }
 
@@ -112,9 +118,12 @@ SystemEntry::SystemEntry(){//constructor does all socket setup, etc
     rooms = new Room;
     scores = new HighScore;
     recent = new RecentHighScore;
+    bots = new Bot;
 
     rooms->userlist = users;//hack
     rooms->romlist = scores->roms;//hack
+    rooms->systembase = this;
+    rooms->botlist = new BotEntry;
 
     strcpy(users->name,"UzenetBOT");
     strcpy(users->realname,"CPU Player");
@@ -179,6 +188,65 @@ SystemEntry::SystemEntry(){//constructor does all socket setup, etc
         critical_err = 7;
     }
 
+    if(LoadBotData()){
+        printf("-Bot file failure.\n");
+        critical_err = 8;
+    }
+
+}
+
+int SystemEntry::LoadBotData(){
+    printf("Loading pipe bot database...\n");
+
+    FILE *userf = fopen("pipebot.dat","r");
+
+    if(userf == NULL){
+        printf("-Failed to open pipebot.dat for reading.\n");
+        userf = fopen("pipebot.dat","w");
+        if(userf == NULL){
+            printf("--Failed to create users.dat, critical error.\n");
+            return 1;
+        }
+        fclose(userf);
+        userf = fopen("pipebot.dat","r");
+        if(userf == NULL){
+            printf("--Failed to create pipebot.dat, critical error.\n");
+            return 1;
+        }
+        printf("--Created file pipebot.dat\n");
+        fclose(userf);
+        return 0;
+    }
+
+    BotEntry *be = rooms->botlist;
+
+
+    int total_entries = 0;
+
+    while(!feof(userf)){
+
+        if(be == NULL)
+            be = rooms->botlist->Create((char *)"BLANK",0,0);
+       // if(ue->prev != NULL)//not the head
+
+        if( !fread(be->name,sizeof(be->name),1,userf))//end of file reached
+            break;
+        if(!fread(be->command,sizeof(be->command),1,userf)){
+                printf("!!**CRITICAL ERROR: PIPE BOT FILE IS CORRUPTED AT ENTRY %d**!!\n",total_entries);
+                fclose(userf);
+                return 1;
+        }
+
+        printf("+%s:%s\n",be->name,be->command);
+        total_entries++;
+        be = be->next;
+
+    }
+
+    fclose(userf);
+    printf("Read pipebot.dat, %d registered bots.\n\n",total_entries);
+
+    return 0;
 }
 
 int SystemEntry::LoadUserData(){
@@ -337,6 +405,7 @@ int SystemEntry::Update(){
 
     Room *r = rooms;
     while(r != NULL){
+
         r->Update();
         r = r->next;
     }
@@ -382,14 +451,14 @@ int SystemEntry::GenerateWebPage(){
 
 
 scores->updated = true;
-    RomEntry *rtemp = scores->CreateRom((const char *)"RCPROAM",(const char *)"R.C. Pro Am");
-    RomCategory *ctemp = scores->roms->CreateCategory((const char *)"RCPROAM",(const char *)"Track 1");
-    ctemp->CreateEntry("D3thAdd3r",999,rawtime);
+//    RomEntry *rtemp = scores->CreateRom((const char *)"RCPROAM",(const char *)"R.C. Pro Am");
+    RomCategory *ctemp = scores->roms->CreateCategory((char *)"RCPROAM",(char *)"Track 1");
+    ctemp->CreateEntry((char *)"D3thAdd3r",999,rawtime);
 
-    RomEntry *slt = scores->CreateRom("SOLITAIR","Solitaire");
- //   slt->CreateCategory("SOLITAIR","cards");
-    slt = scores->CreateRom("FRGFEAST","Frog Feast");
-    slt = scores->CreateRom("MEGATRIS","Megatris");
+//    RomEntry *slt = scores->CreateRom((char *)"SOLITAIR",(char *)"Solitaire");
+//   slt->CreateCategory("SOLITAIR","cards");
+ //   slt = scores->CreateRom((char *)"FRGFEAST",(char *)"Frog Feast");
+   // slt = scores->CreateRom((char *)"MEGATRIS",(char *)"Megatris");
    // ScoreEntry *stemp = ctemp->CreateEntry("D3thAdd3r",1001,rawtime);
 
   //  RomCategory *c2 = scores->roms->CreateCategory("RCPROAM","Track 2");
@@ -421,20 +490,20 @@ scores->updated = true;
         else
             fprintf(f,"%d Users Playing:<br>",num_users);
         fprintf(f,"<font color=\"blue\">&nbsp;&nbsp;");
-        FPrintCurrentClients(f,true,"blue");
+        FPrintCurrentClients(f,true,(char *)"blue");
         fprintf(f,"</b>");
         fprintf(f,"<font color=\"black\">");
 
         //show the most recent high scores made, for any rom
-        fprintf(f,(const char *)"<br><br>\n<b><i><font size=\"6\">Recent Achievements</font></i></b>");
-        fprintf(f,(const char *)"<table class=\"names\"><tr>");
-        fprintf(f,(const char *)"<th>Player</th><th>Game</th><th>Category</th><th>Score</th><th>Date</th></tr>");
+        fprintf(f,"<br><br>\n<b><i><font size=\"6\">Recent Achievements</font></i></b>");
+        fprintf(f,"<table class=\"names\"><tr>");
+        fprintf(f,"<th>Player</th><th>Game</th><th>Category</th><th>Score</th><th>Date</th></tr>");
         RecentHighScore *rhs = recent->next;
 
         int i=0;
         while(rhs != NULL){//FOR EACH RECENT RECORD
             i++;
-            fprintf(f,"<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>12 Jan 2016</td>",rhs->score->name,rhs->rom->fullname,rhs->category->name,&rhs->score->mag);
+            fprintf(f,"<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>12 Jan 2016</td>",rhs->score->name,rhs->rom->fullname,rhs->category->name,rhs->score->mag);
             rhs = rhs->next;
         }
 
@@ -450,9 +519,9 @@ scores->updated = true;
         while(h != NULL){//FOR EACH ROM
 
             //make table header
-            fprintf(f,(const char *)"<table class=\"names\"><tr>");
-            fprintf(f,(const char *)"<caption font-family=\"Time New Roman\" font-size=\"18\"><b>%s</b></caption>",h->fullname);
-            fprintf(f,(const char *)"<th>Category</th><th>Player</th><th>Score</th><th>Date</th></tr>");
+            fprintf(f,"<table class=\"names\"><tr>");
+            fprintf(f,"<caption font-family=\"Time New Roman\" font-size=\"18\"><b>%s</b></caption>",h->fullname);
+            fprintf(f,"<th>Category</th><th>Player</th><th>Score</th><th>Date</th></tr>");
 
             c = h->categories->next;
             bool labelled = false;

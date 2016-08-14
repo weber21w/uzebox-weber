@@ -15,7 +15,7 @@ using namespace std;
 #include "defs.hpp"
 #include "system.hpp"
 
-int main(int argc, char **argv[]){
+int main(int argc, char **argv){
 
     SystemEntry system;//constructor starts everything
 /*
@@ -37,10 +37,22 @@ return 1;
     }
     PrintTime();
     printf(":System initialized, listening at:");
-    system.PrintIP(&system.sock_addr);
+
+    char buf[96];
+    gethostname(buf, sizeof(buf));
+    struct hostent *phe = gethostbyname(buf);
+
+    for(int i=0;phe->h_addr_list[i];i++){
+        struct in_addr addr;
+        memcpy(&addr, phe->h_addr_list[i], sizeof(struct in_addr));
+        if(i > 0)
+            printf(",");
+        printf("%s:%d",inet_ntoa(addr),LISTEN_PORT);
+    }
+
     printf("\n");
 
-    printf("Logging server events to file:log.txt(no further console notifications)\n>");
+    printf("Logging server events to file:log.txt(no further console notifications)\n>log.txt");
 
 
 //system.GenerateWebPage();

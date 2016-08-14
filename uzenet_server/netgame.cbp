@@ -24,6 +24,7 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="bots.hpp" />
 		<Unit filename="client.hpp" />
 		<Unit filename="defs.hpp">
 			<Option target="&lt;{~None~}&gt;" />
