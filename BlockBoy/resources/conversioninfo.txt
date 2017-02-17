@@ -1,0 +1,4 @@
+midiconv -s0 -e122880 bbsong1.mid bbsong1.inc
+midiconv bblevelclear.inc
+midiconv -s0 -e107260 bbsong2.mid bbsong2.inc(doesn't loop quite right?)
+
