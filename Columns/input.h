@@ -48,8 +48,8 @@ if(state[0] & GETREADY)
 	padstate[0] = BTN_START;
 #endif
 countsss[p]++;
-for(uint8_t i=0;i<2;i++)
-ColumnsPrint3num(14,9+i,countsss[i]);
+//for(uint8_t i=0;i<2;i++)
+//ColumnsPrint3num(14,9+i,countsss[i]);
 
 	if(StartDown(p)){
 		if(state[0]&LOSING || state[1]&LOSING)
@@ -122,7 +122,7 @@ ColumnsPrint3num(14,9+i,countsss[i]);
 		//CrashBarUp(3,0);
 	}
 
-	if(BDown(p) || RSDown(p) || LSDown(p)){
+	if(BDown(p) || RSDown(p) || LSDown(p) || (p && score[1] > 9)){
 		Attack(!p);
 	}
 

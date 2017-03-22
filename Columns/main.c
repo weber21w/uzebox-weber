@@ -456,7 +456,7 @@ void main(){
 	StartSong(Song1);//StartSong(Song0);
 	SetMasterVolume(MASTERVOLUME);
 	//while(1){};
-	//Intro();
+	Intro();
 	game_state = GS_TITLE;
 	
 MAINTOP:

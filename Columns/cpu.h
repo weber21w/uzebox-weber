@@ -196,7 +196,7 @@ inline int32_t CpuEvaluate(){
 }
 
 inline int32_t CpuEvaluateHeight(){
-	TriggerFx(0,255,true);
+//	TriggerFx(0,255,true);
 	int16_t total = 0;
 	for(uint8_t i=0;i<16*6;i++){
 		if(cpubuffer[i])
@@ -579,9 +579,9 @@ inline void CpuThink(){//TODO USE LOCAL VARIABLES FOR ANYTHING POSSIBLE
 	}else if(cpustate & CPUDECIDED)//done thinking, implement decision
 		return;
 
-	if(CpuShouldCrash())//besides anything else, could and should we crash the enemy
-		padstate[1] |= BTN_SL;
-	
+	if(CpuShouldCrash()){//besides anything else, could and should we crash the enemy
+	//	padstate[1] |= BTN_SL;
+	}
 	if(cpustate == CPUFIRSTTICK){//last move is done, start new one
 		CpuHandleFirstTick();
 	}
@@ -707,7 +707,7 @@ CPUPICKMOVE:			cpumovepos[1] = 0;
 cpumovenum++;
 				//	if(best == 255)//could not make a move that doesn't lose, don't make a suicide move run out the time(maybe they will lose first)
 					//	return;   //DOESNT WORK!!!
-					if(padstate[0] & BTN_A){
+					if(false){//padstate[0] & BTN_A){
 						for(uint8_t i=0;i<18;i++)
 							ColumnsPrint3num(16,8+i,cpueval[i]);
 						

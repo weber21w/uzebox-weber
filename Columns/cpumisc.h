@@ -88,7 +88,9 @@ inline void CpuFillPad(){
 
 
 bool CpuShouldCrash(){
-	if(score[1] > 9){//can crash
+	if(score[1] > 9 && !oldpadstate[1] & BTN_B && !oldpadstate[1] & BTN_SL){//can crash
+padstate[1] |= BTN_B|BTN_SL|BTN_SR;
+return true;	
 		if((wellfullness[1] > 7*6) || (wellfullness[0]>8*6) ||//if we are in trouble don't die with any unused points! if they are in trouble finish them off!
 			((score[1]+cpuscoretocome) > 30) ||//don't waste points, but keep score around in case they get something good!
 			(piece[0] > 6) || (crashheight[1] >= (score[1]/10))){//crash their magic jewel!
