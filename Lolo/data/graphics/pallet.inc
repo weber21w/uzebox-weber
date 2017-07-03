@@ -1,0 +1,3 @@
+const uint8_t LoloPallet[] PROGMEM = {
+0xFE,0x33,0xf1,0x56,
+};
