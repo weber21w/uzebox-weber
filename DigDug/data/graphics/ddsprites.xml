@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<gfx-xform version="1">
+ 
+	<input file="../data/graphics/ddsprites.png" type="png" tile-width="8" tile-height="8" />
+
+	<output file="../data/graphics/ddsprites.inc" type="mode13-extended">
+		<palette file="../data/graphics/ddpalette.png" var-name="game_palette" maxColors="15" exportPalette="false"/>
+		<tiles var-name="sprite_tiles"/>
+
+		<maps pointers-size="8"> 
+		</maps>	
+
+	</output>
+	 
+</gfx-xform>

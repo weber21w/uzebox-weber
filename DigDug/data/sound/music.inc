@@ -1,0 +1,7 @@
+#include "song0.inc"
+#include "song1.inc"
+#include "song2.inc"
+#include "song3.inc"
+#include "song4.inc"
+#include "song5.inc"
+#include "song6.inc"

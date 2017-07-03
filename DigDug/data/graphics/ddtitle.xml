@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<gfx-xform version="1">
+ 
+<input file="../data/graphics/ddtitle.png" type="png" tile-width="8" tile-height="8" />
+	<output file="../data/graphics/ddtitle.inc" type="mode13-extended">
+		<palette file="../data/graphics/ddtitle.png" var-name="game_palette" maxColors="15" exportPalette="true"/>
+			<tiles var-name="title_tiles"/>
+				<maps pointers-size="8">
+					<map var-name="title_map" left="0" top="2" width="30" height="23"/>
+				</maps>
+	</output>
+</gfx-xform>

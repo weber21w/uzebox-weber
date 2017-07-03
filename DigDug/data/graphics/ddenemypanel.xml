@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<gfx-xform version="1">
+ 
+<input file="../data/graphics/ddenemypanel.png" type="png" tile-width="8" tile-height="8" />
+	<output file="../data/graphics/ddenemypanel.inc" type="mode13-extended">
+		<palette file="../data/graphics/ddpalette.png" var-name="game_palette" maxColors="15" exportPalette="false"/>
+			<tiles var-name="enemy_panel_tiles"/>
+				<maps pointers-size="8">
+					<map var-name="enemy_panel_map" left="0" top="0" width="30" height="5"/>
+				</maps>
+	</output>
+</gfx-xform>
