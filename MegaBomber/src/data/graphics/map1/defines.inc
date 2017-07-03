@@ -1,0 +1,1 @@
+#define NUMSPECIALTILES 8+36

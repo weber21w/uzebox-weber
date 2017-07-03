@@ -1,0 +1,1 @@
+#define NUMSPECIALTILES 16
