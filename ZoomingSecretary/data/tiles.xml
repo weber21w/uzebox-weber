@@ -1,0 +1,12 @@
+<gfx-xform version="1">
+ 
+	<input file="../data/tiles.png" type="png" tile-width="8" tile-height="8"/>
+
+	<output file="../data/tiles.inc" type="mode13-extended">
+	<palette file="../data/palette.png" var-name="graphicsPalette" maxColors="15" exportPalette="true"/>
+		<tiles var-name="gameTiles"/>
+
+
+	</output>
+	 
+</gfx-xform>
