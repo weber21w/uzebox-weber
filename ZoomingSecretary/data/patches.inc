@@ -14,28 +14,36 @@ const char patch00[] PROGMEM = {
   0, PATCH_END,
 };
 
-const char patch01[] PROGMEM = {
+const char patch01[] PROGMEM = {//SFX_STEP1
+  0, PC_WAVE, 7,
+  0, PC_ENV_VOL, 25,
+  0, PC_ENV_SPEED, -8,
+  0, PC_PITCH, 69,
+  1, PC_PITCH, 57,
   0, PATCH_END,
 };
-const char patch02[] PROGMEM = {
-  0, PC_WAVE, 3,
-  0, PC_ENV_VOL, 66,
+const char patch02[] PROGMEM = {//SFX_STEP2
+  0, PC_WAVE, 7,
+  0, PC_ENV_VOL, 25,
+  0, PC_ENV_SPEED, -10,
   0, PC_PITCH, 79,
   1, PC_PITCH, 67,
-  1, PC_ENV_SPEED, -8,
+  1, PC_ENV_SPEED, -16,
   0, PATCH_END,
 };
-const char patch03[] PROGMEM = {
-  0, PC_WAVE, 3,
-  0, PC_ENV_VOL, 66,
+const char patch03[] PROGMEM = {//SFX_STEP3
+  0, PC_WAVE, 7,
+  0, PC_ENV_VOL, 45,
+  0, PC_ENV_SPEED, -8,
   0, PC_PITCH, 60,
   1, PC_PITCH, 48,
-  1, PC_ENV_SPEED, -8,
+  1, PC_ENV_SPEED, -16,
   0, PATCH_END,
 };
-const char patch04[] PROGMEM = {
-  0, PC_WAVE, 3,
-  0, PC_ENV_VOL, 66,
+const char patch04[] PROGMEM = {//SFX_STEP4
+  0, PC_WAVE, 7,
+  0, PC_ENV_SPEED, -12,
+  0, PC_ENV_VOL, 45,
   0, PC_PITCH, 67,
   1, PC_PITCH, 55,
   1, PC_ENV_SPEED, -8,
@@ -487,6 +495,77 @@ const char patch30[] PROGMEM = {
   0,PATCH_END,
 };
 
+const char patch31[] PROGMEM = {
+  0,PC_WAVE,4,
+  0,PC_ENV_SPEED,-16,
+  0,PATCH_END,
+};
+
+const char patch32[] PROGMEM = {
+  0,PC_WAVE,4,
+  0,PC_ENV_SPEED,-6,
+  0,PATCH_END,
+};
+
+const char patch33[] PROGMEM = {//intro song lead
+0,PC_WAVE,5,
+//0,PC_ENV_VOL,120,
+//0,PC_ENV_SPEED,2,
+0,PC_TREMOLO_RATE,178,
+0,PC_TREMOLO_LEVEL,99,
+//0,PC_NOTE_HOLD,0,
+0,PC_ENV_SPEED,-4/2,  
+5,PC_ENV_SPEED,-7/2,
+0,PC_WAVE,2,
+//0,PC_TREMOLO_RATE,168,
+//0,PC_TREMOLO_LEVEL,202,
+5,PC_ENV_SPEED,-12,
+//0,PC_TREMOLO_RATE,128,//added after it already sounded good.............
+0,PATCH_END//40
+};
+
+const char patch34[] PROGMEM = {//intro song back
+0,PC_TREMOLO_LEVEL,140,     
+0,PC_TREMOLO_RATE,111, 
+0,PC_WAVE,4,
+//1,PC_ENV_VOL,0,
+1,PC_ENV_SPEED,2,
+//0,PC_NOTE_HOLD,0,
+0,PC_TREMOLO_LEVEL,180,     
+0,PC_TREMOLO_RATE,120, 
+0,PC_ENV_SPEED,-10,
+0,PATCH_END
+};
+
+const char patch35[] PROGMEM = {//intro song bass
+0,PC_TREMOLO_LEVEL,170,     
+0,PC_TREMOLO_RATE,160, 
+0,PC_WAVE,4,
+//0,PC_ENV_VOL,64,//54
+0,PC_ENV_SPEED,16,
+//1,PC_NOTE_HOLD,0,
+1,PC_ENV_SPEED,-10,
+0,PATCH_END
+};
+
+const char patch36[] PROGMEM = {//intro song kick
+0,PC_NOISE_PARAMS,9,
+0,PC_ENV_VOL,0,
+1,PC_NOISE_PARAMS,12,
+1,PC_ENV_SPEED,-2,
+1,PC_ENV_SPEED,-3,
+1,PC_ENV_SPEED,-8, 
+0,PATCH_END
+};
+
+const char patch37[] PROGMEM = {//intro song hat
+0,PC_ENV_VOL,0,
+0,PC_ENV_SPEED,-8,
+0,PC_NOISE_PARAMS,6,
+2,PC_NOISE_PARAMS,0x1,
+0,PATCH_END 
+};
+
 const struct PatchStruct patches[] PROGMEM = {
 //sfx
 {0,NULL,patch00,0,0},//
@@ -520,5 +599,13 @@ const struct PatchStruct patches[] PROGMEM = {
 {0,NULL,patch28,0,0},
 {0,NULL,patch29,0,0},
 {0,NULL,patch30,0,0},
+{0,NULL,patch31,0,0},//fired song instrument 1
+{0,NULL,patch32,0,0},//fired song instrument 2
+{0,NULL,patch33,0,0},//intro song instrument 1
+{0,NULL,patch34,0,0},//intro song instrument 2
+{0,NULL,patch35,0,0},//intro song instrument 3
+{1,NULL,patch36,0,0},//intro song instrument 4(kick)
+{1,NULL,patch37,0,0},//intro song instrument 5(hat)
+
 //instruments
 };

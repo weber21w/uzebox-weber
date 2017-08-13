@@ -2,8 +2,7 @@
  
 	<input file="../data/sprites.png" type="png" tile-width="8" tile-height="8"/>
 
-	<output file="../data/sprites.inc" type="4bpp" isBackgroundTiles="false" duplicate-tiles="keep">
-	<palette file="../data/palette.png" var-name="graphicsPalette" maxColors="15" exportPalette="false"/>
+	<output file="../data/sprites.inc" duplicate-tiles="keep">
 		<tiles var-name="gameSprites"/>
 
 	</output>

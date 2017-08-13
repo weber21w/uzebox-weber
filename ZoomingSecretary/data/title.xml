@@ -2,8 +2,7 @@
  
 	<input file="../data/title.png" type="png" tile-width="8" tile-height="8"/>
 
-	<output file="../data/title.inc" type="4bpp" isBackgroundTiles="false">
-		<palette file="../data/palette.png" var-name="graphicsPalette" maxColors="15" exportPalette="false"/>
+	<output file="../data/title.inc">
 		<tiles var-name="titleTiles"/>
 		<maps pointers-size="8"> 
 			<map var-name="titleMap" left="0" top="0" width="24" height="14"/>
