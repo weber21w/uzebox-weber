@@ -22,50 +22,7 @@
 */
 
 
-/*
-FORUM POST
 
-I'm happy to anounce a new Uzebox game has arrived! This particular game is ported from Petri Häkkinen's source code for his 
-console called "The Box" here. His system is pretty interesting in that it is Arduinoish and essentially half an Uzebox with a ATMega328 @ 16mhz/2k ram/32k flash.
-To pull it off with these specs he uses 3 different video modes with varying resolutions and capabilities for different parts of the game.
-The gameplay video mode is mode 2 like with 3 sprites using scanline buffers. He multiplexes the sprites to get "unlimited" vertical sprites.
-If you enjoy Uzebox stuff his blog will likely also interest you. Doesn't fit to enter this for UCC since it is based directly off Petri's work on a similar system.
-I might have another surprise by the deadline if life allows it ;)
-
-So this randomly just happened while googling. I found the blog and thought "half an Uzebox is running
-this interesting game?! Neat!". He notes the Uzebox as some inspiration for the video side of things, so I was just curious
-what his code looked like. Quite clean I thought, and it looked straight forward to port. I just started doing it and quickly
-had something running that sort of worked as intended by making wrappers to the kernel. The original video resolution is 104x80 so once I had it "working" on Uzebox
-and graphics converted over to our color scheme, it was of course just a small part of a full mode 3 240x224 screen. So I upscaled all the graphics,
-reworked the title screen for higher resolution and to take less space(since I wanted to add some extra stuff to justify our 'massive' 64k flash).
-I thought it would be also easy to convert game logic to 60hz, from 30hz, as well as 16x16 pixel tiles to closer match our resolution.
-Well, there ended up being more issues and details than I anticipated with that, but in the end development was reasonably quick.
-
-Of course Uzebox being more powerful than the original ATMega328 hardware I wanted to add some extra features to justify our specs. If you have the included .BIN file
-you will see the extra intro animations and such. You will also have the ability to play expansion episodes that are selectable at start up.
-If that is not interesting enough for you, check out the level editor where you can make your own quests saved to SD card. Well, all the editor code is working...
-except there is not yet a way to save to SD. When that happens I will update that single part and you can create your own quests. The original version
-had some quite nice tracker like music which I attempted to convert to our sound engine. This turned out to be problematic and I wasn't sure
-it was even possible to sound right on our engine no matter what. So, as this was intended to be a very fast development, I just chose what
-I thought was some fitting music. It's a shame, since the original music is pretty catchy and unique. Sound effects work differently there as well,
-so I made some more or less similar sounding ones. EEPROM high scores are implemented, try to beat your friends!
-
-So about the game. Well my explanation is convulated and maybe wrong. The game is actually called "Toorum's Quest II" on "The Box", but where is Toorums Quest I?
-As best as I can figure, Toorum's Quest I may have been implied inside the game Legend Of Grimrock(a Steam game, which Petri co-created)..but I am not sure. The character Toorum
-is definitely from LoG and is kind of a hardcore character(who dies?), you originally hear about his quests from logs inside the game. Then they created a Toorum's Quest II mod,
-based on this character for LoG on Steam...which is essentially a PC version of the same game.
-Then, Petri created "The Box" and developed a port of that LoG mod for it...then that port of a mod of a game character with a post humously implied prequel, was ported over to Uzebox with
-a changed name to match what would have been the title of the original prequel?!! Basically it is not called Toorum's Quest II because it would have taken extra tiles on the title screen...
-
-
-Anyways guys, hope you enjoy it. Have fun and let me know if you find any bugs! Editor should "just work" once SD writing is practical, and I will
-follow up with an update then.
-
-
-
-
-
-*/
 
 #include <stdbool.h>
 #include <avr/io.h>
@@ -300,7 +257,7 @@ void UzeboxIntro(){
 	ClearVram();
 	FadeIn(6,false);
 	drawText(2,3,PSTR("ORIGINAL CODE"));
-	drawText(5,5,PSTR("PETRI HÄKKINEN"));
+	drawText(5,5,PSTR("PETRI HÃ„KKINEN"));
 	drawText(2,9,PSTR("TILE GRAPHICS"));
 	drawText(5,11,PSTR("ANTTI TIIHONEN"));
 	drawText(2,15,PSTR("TITLE GRAPHICS"));
