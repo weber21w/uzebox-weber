@@ -4,7 +4,10 @@
 
 	<output file="../data/tiles.inc">
 		<tiles var-name="gameTiles"/>
-
+		<maps pointers-size="8"> 
+			<map var-name="titleMap" left="0" top="48" width="24" height="15"/>
+			<map var-name="winMap" left="0" top="33" width="24" height="15"/>
+		</maps>
 
 	</output>
 	 

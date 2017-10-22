@@ -1,395 +1,382 @@
 const uint8_t lvl_data[] PROGMEM = {
 
 //level 1
-	10,(250/5),2,//calls, delay between calls, number of topics
+
+	0,10,(250/5),//tile set, calls, delay between calls
 
 	//player
-	10,9,	
+	15,18,	
 
 	//NPC
 	255,
 
 	//platforms
-	4,11,22,
-	0,19,30,
+	5,11,22,
+	0,19,32,
 	255,
 	
 	//ladders
-	9,11,8,
-	17,11,8,
+	10,11,8,
+	20,11,8,
 	255,
 
 	//cabinets
-	5,16,0,
-	23,16,1,
+	6,16,0,
+	24,16,1,
 	255,
 
 	//desks
-	5,9,
-	22,9,
+	6,9,
+	23,9,
 	255,
 
 	//coffee machine
 	255,
 
 	//clock
-	14,5,
+	15,5,
 	255,
 
 	//door
-	13,8,
-	255,
-
-//level 2
-	15,(250/5),2,//calls, delay between calls, number of topics
-	
-	//player
-	10,10,	
-
-	//NPC
-	10,19,2,
-
-	//platforms
-	0,7,12,
-	18,7,12,
-	0,15,30,
-	0,23,30,
-	255,
-
-	//ladders
-	9,7,8,
-	19,7,8,
-	2,15,8,
-	14,15,8,
-	26,15,8,
-	255,
-
-	//cabinets
-	7,20,0,
-	21,20,1,
-	255,
-
-	//desks
-	22,5,
-	5,13,
-	22,13,
-	255,
-
-	//coffee machine
-	5,3,
-	255,
-
-	//clock
 	14,8,
 	255,
 
-	//door
+//level 2
+	1,15,(250/5),//tile set, calls, delay between calls
+	
+	//player
+	2,14,	
 
+	//NPC
+	28,12,1,//chief
+	255,
+
+	//platforms
+	0,7,13,
+	19,7,13,
+	0,15,32,
+	0,23,32,
+	255,
+
+	//ladders
+	10,7,8,
+	20,7,8,
+	3,15,8,
+	15,15,8,
+	27,15,8,
+	255,
+
+	//cabinets
+	8,20,0,
+	22,20,1,
+	255,
+
+	//desks
+	23,5,
+	6,13,
+	23,13,
+	255,
+
+	//coffee machine
+	6,3,
+	255,
+
+	//clock
+	15,8,
+	255,
+
+	//door
 	255,
 
 //level 3
-	20,(250/5),3,//calls, delay between calls, number of topics
+	2,20,(250/5),//tileset, calls, delay between calls
 
 	//player
-	10,10,	
+	4,6,	
 
 	//NPC
-	10,10,1,
+	27,4,2,
+	255,
 
 	//platforms
-	0,7,30,
-	0,15,30,
-	0,23,30,
+	0,7,32,
+	0,15,32,
+	0,23,32,
 	255,
 
 	//ladders
-	1,7,8,
-	27,7,8,
-	7,15,8,
-	21,15,8,
+	2,7,8,
+	28,7,8,
+	8,15,8,
+	22,15,8,
 	255,
 
 	//cabinets
-	4,12,0,
-	24,12,1,
-	14,20,2,
+	5,12,0,
+	25,12,1,
+	15,20,2,
 	255,
 
 	//desks
-	13,13,
-	2,21,
-	26,21,
+	14,13,
+	3,21,
+	27,21,
 	255,
 
 	//coffee machine
-	13,3,
+	14,3,
 	255,
 
 	//clock
-
 	255,
 
 	//door
-
 	255,
 
 //level 4
-	25,(250/5),3,//calls, delay between calls, number of topics
+	3,25,(250/5),//tile set, calls, delay between calls
 
 	//player
-	10,10,	
+	3,6,	
 
 	//NPC
+	19,12,3,
 	255,
 
 	//platforms
-	0,7,12,
-	18,7,12,
-	0,15,30,
-	0,23,30,
-
+	0,7,13,
+	19,7,13,
+	0,15,32,
+	0,23,32,
 	255,
 
 	//ladders
-	9,3,4,
-	19,3,4,
-	2,7,8,
-	26,7,8,
-	5,15,8,
-	23,15,8,
-	9,23,3,
-	19,23,3,
+	10,3,4,
+	20,3,4,
+	3,7,8,
+	27,7,8,
+	6,15,8,
+	24,15,8,
+	10,23,3,
+	20,23,3,
 	255,
 
 	//cabinets
-	2,20,0,
-	14,20,1,
-	26,20,2,
-	255,
-
-	//desks
-	5,5,
-	22,5,
-
-	255,
-
-	//coffee machine
-	13,11,
-	255,
-
-	//clock
-
-	255,
-
-	//door
-
-	255,
-
-//level bonus
-	1,(0/5),0,//calls, delay between calls, number of topics
-
-	//player
-	10,10,	
-
-	//NPC
-	255,
-
-	//platforms
-	6,7,18,
-	2,15,26,
-	0,23,30,
-	255,
-
-	//ladders
-	11,7,8,
-	17,7,8,
-	3,15,8,
-	25,15,8,
-	255,
-
-	//cabinets
-
-	255,
-
-	//desks
-	7,5,
-	20,5,
-	7,13,
-	20,13,
-	7,21,
-	20,21,
-	255,
-
-	//coffee machine
-	255,
-
-	//clock
-
-	255,
-
-	//door
-
-	255,
-
-//level 5
-	30,(275/5),4,//calls, delay between calls, number of topics
-
-	//player
-	10,10,	
-
-	//NPC
-	255,
-
-	//platforms
-	4,7,22,
-	0,15,30,
-	0,23,30,
-	255,
-
-	//ladders
-	14,2,6,
-	5,15,8,
-	23,15,8,
-	14,23,3,
-	255,
-
-	//cabinets
-	5,4,1,
-	23,4,3,
-	1,20,0,
+	3,20,0,
+	15,20,1,
 	27,20,2,
-	
-	255,
-
-	//desks
-	8,13,
-	19,13,
-	18,21,
-	255,
-
-	//coffee machine
-	9,19,
-	255,
-
-	//clock
-
-	255,
-
-	//door
-
-	255,
-
-//level 6
-	35,(400/5),4,//calls, delay between calls, number of topics
-
-	//player
-	10,10,	
-
-	//NPC
-	255,
-
-	//platforms
-	0,7,6,
-	9,8,12,
-	24,7,6,
-	0,15,12,
-	18,15,12,
-	0,23,30,
-	255,
-
-	//ladders
-	4,3,4,
-	15,3,5,
-	24,3,4,
-	7,15,8,
-	21,15,8,
-	4,23,3,
-	15,23,3,
-	24,23,3,
-	255,
-
-	//cabinets
-	10,12,0,
-	18,12,2,
-	1,20,1,
-	27,20,3,
-	255,
-
-	//desks
-	2,13,
-	25,13,
-	10,21,
-	17,21,
-
-	255,
-
-	//coffee machine
-	11,4,
-	255,
-
-	//clock
-
-	255,
-
-	//door
-
-	255,
-
-//level 7
-	40,(450/5),4,//calls, delay between calls, number of topics
-
-	//player
-	10,10,	
-
-	//NPC
-	255,
-
-	//platforms
-	0,7,30,
-	0,15,30,
-	0,23,30,
-	255,
-
-	//ladders
-	12,3,4,
-	2,7,8,
-	16,7,8,
-	26,7,8,
-	5,15,8,
-	23,15,8,
-	12,23,3,
-	255,
-
-	//cabinets
-	8,12,0,
-	20,12,2,
-	8,20,1,
-	20,20,3,
 	255,
 
 	//desks
 	6,5,
-	20,5,
-	1,21,
-	26,21,
+	23,5,
 	255,
 
 	//coffee machine
-	15,20,
+	14,11,
 	255,
 
 	//clock
-
 	255,
 
 	//door
+	255,
 
+//level bonus
+	4,1,(0/5),//tile set, calls, delay between calls
+
+	//player
+	15,14,	
+
+	//NPC
+	11,10,7,
+	255,
+
+	//platforms
+	7,7,18,
+	3,15,26,
+	0,23,32,
+	255,
+
+	//ladders
+	12,7,8,
+	18,7,8,
+	4,15,8,
+	26,15,8,
+	255,
+
+	//cabinets
+	255,
+
+	//desks
+	8,5,
+	21,5,
+	8,13,
+	21,13,
+	8,21,
+	21,21,
+	255,
+
+	//coffee machine
+	255,
+
+	//clock
+	255,
+
+	//door
+	255,
+
+//level 5
+	0,30,(275/5),//tile set, calls, delay between calls
+
+	//player
+	2,14,	
+
+	//NPC
+	28,12,4,
+	255,
+
+	//platforms
+	5,8,22,
+	0,15,32,
+	0,23,32,
+	255,
+
+	//ladders
+	15,3,5,
+	6,15,8,
+	24,15,8,
+	15,23,3,
+	255,
+
+	//cabinets
+	6,5,1,
+	24,5,3,
+	2,20,0,
+	28,20,2,
+	255,
+
+	//desks
+	9,13,
+	20,13,
+	19,21,
+	255,
+
+	//coffee machine
+	10,19,
+	255,
+
+	//clock
+	255,
+
+	//door
+	255,
+
+//level 6
+	1,35,(400/5),//tile set, calls, delay between calls
+
+	//player
+	7,14,	
+
+	//NPC
+	22,12,5,//box guy
+	255,
+
+	//platforms
+	0,7,7,
+	10,8,12,
+	25,7,7,
+	0,15,13,
+	19,15,13,
+	0,23,32,
+	255,
+
+	//ladders
+	5,3,4,
+	16,3,5,
+	25,3,4,
+	8,15,8,
+	22,15,8,
+	5,23,3,
+	16,23,3,
+	25,23,3,
+	255,
+
+	//cabinets
+	11,12,0,
+	19,12,2,
+	2,20,1,
+	28,20,3,
+	255,
+
+	//desks
+	3,13,
+	26,13,
+	11,21,
+	18,21,
+	255,
+
+	//coffee machine
+	12,4,
+	255,
+
+	//clock
+	255,
+
+	//door
+	255,
+
+//level 7
+	2,40,(450/5),//calls, delay between calls
+
+	//player
+	14,14,	
+
+	//NPC
+	27,20,6,
+	255,
+
+	//platforms
+	0,7,32,
+	0,15,32,
+	0,23,32,
+	255,
+
+	//ladders
+	13,3,4,
+	3,7,8,
+	17,7,8,
+	27,7,8,
+	6,15,8,
+	24,15,8,
+	13,23,3,
+	255,
+
+	//cabinets
+	9,12,0,
+	21,12,2,
+	9,20,1,
+	21,20,3,
+	255,
+
+	//desks
+	7,5,
+	21,5,
+	2,21,
+	27,21,
+	255,
+
+	//coffee machine
+	16,19,
+	255,
+
+	//clock
+	255,
+
+	//door
 	255,
 };
 
 
-#include "title_map.inc"
-#include "gameover_map.inc"
-#include "welldone_map.inc"
 #include "metasprite_map.inc"
 #include "animations.inc"
