@@ -1,4 +1,0 @@
-const unsigned char mus_game[] PROGMEM = {
-0xFF,0xFF,0xFF,0xFF,
-
-};
