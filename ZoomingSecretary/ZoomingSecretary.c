@@ -13,8 +13,7 @@
 #include "data/maps.inc"
 #include "data/messages.inc"
 
-void db(){TriggerFx(1,255,1);}
-void dbf(){while(1){db();}}
+
 extern u8 ram_tiles[];
 extern u8 masterVolume;
 extern void TriggerCommon(Track* track,u8 patch,u8 volume,u8 note);
@@ -28,8 +27,8 @@ extern void TriggerCommon(Track* track,u8 patch,u8 volume,u8 note);
 #define TILE_SIZE	8
 #define TILE_BIT	3
 
-#define FP_BITS		4//4
-#define FP_MASK		15//0b00011111//15
+#define FP_BITS		4UL
+#define FP_MASK		15UL
 
 #define TILE_EMPTY	0
 #define TILE_WALL	1
@@ -43,7 +42,7 @@ const uint8_t uzebox_string[] PROGMEM = {
 53,58,37,34,47,56,
 };
 
-const char uze_sine_table[] PROGMEM = {
+const uint8_t uze_sine_table[] PROGMEM = {
 3,3,4,5,7,8,9,11,
 12,14,15,17,19,21,
 23,25,27,30,32,35,37,40,
@@ -78,37 +77,38 @@ const uint8_t tileAttr[] PROGMEM = {
 
 
 #define DIR_NONE	0
-#define DIR_UP		4//4
-#define DIR_DOWN	8//8
-#define DIR_LEFT	1//1
-#define DIR_RIGHT	2//2
+#define DIR_LEFT	1
+#define DIR_RIGHT	2
+#define DIR_UP		4
+#define DIR_DOWN	8
 
-static int16_t		player_x;
-static uint16_t		player_y;
-static uint8_t		player_px;
-static uint8_t		player_py;
-const uint8_t		*player_spr;
-const uint8_t		*player_spr_prev;
-static uint8_t		player_ladder;
-static uint8_t		player_dir;
-static uint8_t		player_dir_prev;
-static uint16_t		player_dir_cnt;
-static uint8_t		player_floor;
-static uint8_t		player_topic;
-static uint16_t		player_speed;
-static uint16_t		player_speed_to;
-static uint8_t		player_coffee;
-static uint16_t		player_step_cnt;
-static uint8_t		player_step_type;
-static uint8_t		player_slowdown;
-static uint8_t		player_step_anim;
-static uint8_t		player_knocked;
-static uint8_t		player_knocked_anim;
-static uint16_t		player_wisdom;
-static uint8_t		player_catch;
-static uint8_t		player_answer;
 
-static uint8_t		topics_active;
+int16_t		player_x;
+int16_t		player_y;
+uint8_t		player_px;
+uint8_t		player_py;
+const uint8_t	*player_spr;
+const uint8_t	*player_spr_prev;
+uint8_t		player_ladder;
+uint8_t		player_dir;
+uint8_t		player_dir_prev;
+uint16_t	player_dir_cnt;
+uint8_t		player_floor;
+uint8_t		player_topic;
+uint16_t	player_speed;
+uint16_t	player_speed_to;
+uint8_t		player_coffee;
+uint16_t	player_step_cnt;
+uint8_t		player_step_type;
+uint8_t		player_slowdown;
+uint8_t		player_step_anim;
+uint8_t		player_knocked;
+uint8_t		player_knocked_anim;
+uint16_t	player_wisdom;
+uint8_t		player_catch;
+uint8_t		player_answer;
+
+uint8_t		topics_active;
 
 #define ZS_MASTER_VOL		192
 #define SFX_RINGTONE		0//phone ringing
@@ -126,13 +126,12 @@ static uint8_t		topics_active;
 #define SFX_START		12//title hit start
 #define SFX_PAUSE		13//2 part effect
 #define SFX_LOSE		14//2 part effect
-#define SFX_BLA2		15//2 part effect
+#define SFX_BLA2		15//touched gossiper, 2 part effect
 #define SFX_COFFEE_READY	16//coffee cup appears at machine
 #define SFX_KNOCK		17//hit by box man
 #define SFX_WISDOM		18//touched love interest
 #define SFX_EXPLODE		19//bonus stage answer phone
 #define SFX_TELEPORT		20//bonus stage phone disappears
-#define SFX_WAVES		21/////TODO SPLICED THIS ONE IN, NEED TO FIX OFFSETS IN PLACES......
 
 #define SFX_ALL			21
 
@@ -146,15 +145,15 @@ static uint8_t		topics_active;
 
 #define MUS_ALL			7
 
-const uint8_t* const musicData[MUS_ALL] PROGMEM = {
-(uint8_t *)introSong,//mus_level,
-(uint8_t *)mus_clear,
-(uint8_t *)mus_gameover,
-(uint8_t *)mus_game,
+const char* const musicData[MUS_ALL] PROGMEM = {
+mus_level,
+mus_clear,
+mus_gameover,
+mus_game,
 
-(uint8_t *)mus_welldone,
-(uint8_t *)mus_dream,
-(uint8_t *)mus_nobonus
+mus_welldone,
+mus_dream,
+mus_nobonus
 };
 
 
@@ -168,90 +167,88 @@ const uint8_t* const musicData[MUS_ALL] PROGMEM = {
 #define NPC_GHOST		7//TILE_NUM_GHOST
 
 
-static uint8_t	npc_all;
-static uint8_t	npc_type;
-static int16_t	npc_x;
-static int16_t	npc_y;
-static uint8_t	npc_dir;
-static uint16_t	npc_cnt;
+uint8_t		npc_type;
+int16_t		npc_x;
+int16_t		npc_y;
+uint8_t		npc_dir;
+uint16_t	npc_cnt;
 const uint8_t 	*npc_spr;
-static uint8_t	npc_tx;
-static uint8_t	npc_ty;
-static uint8_t	npc_wait;
-static uint8_t	npc_speed;
-static int16_t	npc_dx ;
-static int16_t	npc_dy;
+uint8_t		npc_tx;
+uint8_t		npc_ty;
+uint8_t		npc_wait;
+uint8_t		npc_speed;
+int16_t		npc_dx;
+int16_t		npc_dy;
 
 #define PHONE_MAX 4
 
-static uint8_t	phone_all;
-static uint8_t	phone_x[PHONE_MAX];
-static uint8_t	phone_y[PHONE_MAX];
-static uint16_t	phone_cnt[PHONE_MAX];
-static uint8_t	phone_level[PHONE_MAX];
-static uint8_t	phone_topic[PHONE_MAX];
+uint8_t		phone_all;
+uint8_t		phone_x[PHONE_MAX];
+uint8_t		phone_y[PHONE_MAX];
+uint16_t	phone_cnt[PHONE_MAX];
+uint8_t		phone_level[PHONE_MAX];
+uint8_t		phone_topic[PHONE_MAX];
 
-static uint8_t	phone_runaway;
-static uint8_t	phone_runaway_max;
+uint8_t		phone_runaway;
+uint8_t		phone_runaway_max;
 
 #define TABLE_MAX	6
 
-static uint8_t	table_all;
-static uint8_t	table_x[TABLE_MAX];
-static uint8_t	table_y[TABLE_MAX];
-static uint8_t	table_cur;
+uint8_t		table_all;
+uint8_t		table_x[TABLE_MAX];
+uint8_t		table_y[TABLE_MAX];
+uint8_t		table_cur;
 
 #define TOPIC_MAX	4
 
-static uint8_t	topic_all;
-static uint8_t	topic_x[TOPIC_MAX];
-static uint8_t	topic_y[TOPIC_MAX];
-static uint8_t	topic_id[TOPIC_MAX];
+uint8_t		topic_all;
+uint8_t		topic_x[TOPIC_MAX];
+uint8_t		topic_y[TOPIC_MAX];
+uint8_t		topic_id[TOPIC_MAX];
 
-static uint8_t	topic_flash_x;
-static uint8_t	topic_flash_y;
-static uint8_t	topic_flash_type;
-static uint8_t	topic_flash_cnt;
+uint8_t		topic_flash_x;
+uint8_t		topic_flash_y;
+uint8_t		topic_flash_type;
+uint8_t		topic_flash_cnt;
 
-static uint8_t	topic_msg[TOPIC_MAX];
+uint8_t		topic_msg[TOPIC_MAX];
 
 #define HEARTS_MAX	8
 
-static uint8_t	heart_ptr;
+uint8_t		heart_ptr;
 
-static uint8_t	heart_x[HEARTS_MAX];
-static uint8_t	heart_y[HEARTS_MAX];
-static uint8_t	heart_cnt[HEARTS_MAX];
+uint8_t		heart_x[HEARTS_MAX];
+uint8_t		heart_y[HEARTS_MAX];
+uint8_t		heart_cnt[HEARTS_MAX];
 
-static uint8_t px,py;
-static uint16_t	padState,oldPadState;
+uint8_t		px,py;
+uint16_t	padState,oldPadState;
 
-static uint8_t	frame_cnt;
+uint8_t		frame_cnt;
+uint8_t		test_mode;
+uint8_t		sprite_count;
 
-static uint8_t	calls_count;
-static uint8_t	calls_missed;
-static uint8_t	calls_missed_max;
-static uint8_t	calls_missed_level;
-static uint8_t	calls_level;
-static uint16_t	call_delay;
+uint8_t		calls_count;
+uint8_t		calls_missed;
+uint8_t		calls_missed_max;
+uint8_t		calls_missed_level;
+uint8_t		calls_level;
+uint16_t	call_delay;
 
-static uint8_t	coffee_x;
-static uint8_t	coffee_y;
-static uint16_t	coffee_wait;
+uint8_t		coffee_x;
+uint8_t		coffee_y;
+uint16_t	coffee_wait;
 
-static uint8_t	level;
-static uint8_t	pause;
-static uint8_t	bonus;
+uint8_t		level;
+uint8_t		pause;
+uint8_t		bonus;
 
-static uint16_t	ring_cnt;
+uint16_t	ring_cnt;
 
-static uint8_t	msg_cnt;
+uint8_t	msg_cnt;
 const uint8_t	*msg_ptr;
-static uint8_t	msg_wait;
-static uint8_t	msg_off;
-
-static uint8_t	test_mode;
-
+uint8_t	msg_wait;
+uint8_t	msg_off;
 
 
 const uint8_t CoffeeMap[] PROGMEM = {
@@ -298,10 +295,10 @@ const uint16_t testCode[] PROGMEM = { BTN_B,BTN_A,BTN_B,BTN_A,BTN_LEFT,BTN_UP,BT
 
 #define FLOORS_MAX	4
 
-static uint8_t floor_left_cnt;
-static uint8_t floor_right_cnt;
-static uint8_t floor_left [FLOORS_MAX];
-static uint8_t floor_right[FLOORS_MAX];
+uint8_t floor_left_cnt;
+uint8_t floor_right_cnt;
+uint8_t floor_left [FLOORS_MAX];
+uint8_t floor_right[FLOORS_MAX];
 
 #define LEVELS_ALL	8
 #define LEVEL_BONUS	4
@@ -313,15 +310,10 @@ void ZSTriggerFx(uint8_t patch){
 		if(tracks[i].fxPatchNo >= SFX_STEP1 && tracks[i].fxPatchNo <= SFX_STEP4)		
 			tracks[i].flags &= ~TRACK_FLAGS_PRIORITY;
 	}
-TriggerFx(patch,255,1);//return;
-//	uint8_t chan = pgm_read_byte(&sfxdepth[(patch*2)+0]);
+TriggerFx(patch,255,1);
 	uint8_t depth = pgm_read_byte(&sfxdepth[(patch*2)+1]);
 
-	Track* track;//=&tracks[chan];
-//	tracks[chan].flags|=TRACK_FLAGS_PRIORITY;
-//	track->patchCommandStreamPos = NULL;
-//	TriggerCommon(track,patch,255,80);
-//	track->flags|=TRACK_FLAGS_PLAYING;
+	Track* track;
 
 	if(depth != 255){
 		track=&tracks[4];
@@ -345,10 +337,8 @@ void DrawMapOffset(uint8_t x, uint8_t y, const uint8_t *map, int16_t off){
 	}
 }
 
-uint8_t sprite_count;
+
 void SetSprite(uint8_t x, uint8_t y, uint8_t t, uint8_t f){
-//	if(x > (SCREEN_TILES_H*8)-8 || y > (SCREEN_TILES_V*8)-8)
-//		return;
 	sprites[sprite_count].x = x;
 	sprites[sprite_count].y = y;
 	sprites[sprite_count].tileIndex = t;
@@ -363,7 +353,7 @@ void DrawMetaSprite(uint8_t sx, uint8_t sy, const uint8_t *frame){
 
 	uint8_t t,f,dx,dy;
 
-	while(1){//very strange issue going on if I inline the pgm_read_byte() into SetSprite()?!?!?!
+	while(1){
 		t = pgm_read_byte(frame++);
 		if(t == 128)
 			return;
@@ -376,10 +366,6 @@ void DrawMetaSprite(uint8_t sx, uint8_t sy, const uint8_t *frame){
 }
 
 
-
-inline void ZSPrint(uint8_t x, uint8_t y, const char* str){
-	Print(x,y,str);
-}
 
 void ResetSprites(){
 	for(uint8_t i=0;i<MAX_SPRITES;i++)
@@ -405,6 +391,8 @@ uint8_t CheckMap(uint8_t x,uint8_t y){
 	uint16_t x16 = x>>TILE_BIT;
 	uint16_t y16 = y>>TILE_BIT;
 
+	if(y16 >= SCREEN_TILES_V)//fix ladder bug, for shortened screen
+		return TILE_LADDER;//hackity hack hack...could just make vram 1 tile higher
 	return pgm_read_byte(&tileAttr[vram[(y16*VRAM_TILES_H)+x16]-RAM_TILES_COUNT]);
 }
 
@@ -452,7 +440,7 @@ void PhoneReset(uint8_t id,uint16_t delay,uint8_t answer){
 	if(answer)
 		return;
 
-	if(call_delay>125)
+	if(call_delay > 125)
 		call_delay -= 10;
 }
 
@@ -526,12 +514,14 @@ void HeartsUpdate(){
 			heart_cnt[t]--;
 
 			if(!heart_cnt[t])
-				heart_y[t] = 240;////TODO HIDE THIS SPRITE RIGHT????
+				heart_y[t] = 240;//turn off heart
 		}
 
 		t++;
 	}
 }
+
+
 
 void HeartsDisplay(){
 	for(uint8_t i=0;i<HEARTS_MAX;i++){
@@ -544,10 +534,11 @@ void HeartsDisplay(){
 		else
 			t = 0x3d-(heart_cnt[i]>>1);
 
-		//spr = oam_spr(heart_x[i],heart_y[i],j,0,spr);
 		SetSprite(heart_x[i],heart_y[i],t,0);
 	}
 }
+
+
 
 void SetMessage(const uint8_t *msg){
 	msg_ptr = msg;
@@ -597,14 +588,14 @@ void MovePhone(uint8_t table){//only used for bonus/dream
 	table_cur = table;
 	SetTile(phone_x[0]-1,phone_y[0],0);//erase ring waves
 	SetTile(phone_x[0]+1,phone_y[0],0);
-	SetTile(phone_x[0],phone_y[0],0);//pgm_read_byte(&animPhone[0]));
-	phone_x[0] = table_x[table]+1;////TODO HACK +1
+	SetTile(phone_x[0],phone_y[0],0);
+	phone_x[0] = table_x[table]+1;//HACK +1
 	phone_y[0] = table_y[table];
 }
 
 
 
-void NPCadd(uint16_t x, uint16_t y, uint8_t type){
+void NPCadd(uint16_t x, uint16_t y, uint8_t type){//return;
 	npc_type = type;
 	npc_x = x;
 	npc_y = y;
@@ -625,8 +616,8 @@ void NPCadd(uint16_t x, uint16_t y, uint8_t type){
 
 		case NPC_CHATTER:
 			npc_dir =DIR_NONE;
-			npc_cnt =20;
-			npc_wait=0;
+			npc_cnt = 20;
+			npc_wait = 0;
 			npc_spr = (uint8_t *)pgm_read_word(&animChatterWalkLeft[0]);
 			break;
 
@@ -640,27 +631,28 @@ void NPCadd(uint16_t x, uint16_t y, uint8_t type){
 
 		case NPC_DIBROV:
 			npc_spr  = (uint8_t *)pgm_read_word(&animDibrovWalkLeft[0]);
-			npc_speed=1;
+			npc_speed = 1;
 			break;
 
 		default://case NPC_GHOST:
 			npc_x = 16<<FP_BITS;
-			npc_y = 64<<FP_BITS;//(SCREEN_TILES_V*8)<<FP_BITS;///////////npc_y = 240<<FP_BITS;
+			npc_y = SCREEN_HEIGHT<<FP_BITS;///////////npc_y = 240<<FP_BITS;
+////////////////
+/////TODO THIS BROKE WHEN STARTED MESSING AROUND WITH MAKEFILE FLAGS!!!!!!!!!!!!!!!!!!!!!
 			npc_dx = 0;
 			npc_dy = 0;
 			npc_spr = sprChiefGhostR;
 			npc_cnt = 50;
-			npc_wait= 150;
+			npc_wait = 150;
 			break;
 	}
 
-	npc_all++;
 }
 
 
 
 void NPCdisplay(){
-	if(!npc_all)
+	if(npc_type == 255)
 		return;
 
 	switch(npc_type){
@@ -674,7 +666,7 @@ void NPCdisplay(){
 				SetSprite(npc_tx+8,npc_ty,0x46,0);//a..
 			}		
 		default:
-			if(npc_x != 0 && npc_x != SCREEN_WIDTH-16)
+			if(npc_x > 0 && npc_x < SCREEN_WIDTH-16)
 				DrawMetaSprite(npc_x,npc_y-1,npc_spr);//NPC
 
 	}
@@ -847,7 +839,6 @@ void NPCchatter(){
 				npc_spr = (uint8_t *)pgm_read_word(&animChatterTalkLeft[f]);
 			else
 				npc_spr = (uint8_t *)pgm_read_word(&animChatterTalkRight[f]);
-			//npc_spr = (player_px<px)?animChatterTalkLeft[j]:npc_spr = animChatterTalkRight[j];
 
 			return;
 		}
@@ -860,7 +851,6 @@ void NPCchatter(){
 			npc_spr = (uint8_t *)pgm_read_word(&animChatterGlassesLeft[f]);
 		else
 			npc_spr = (uint8_t *)pgm_read_word(&animChatterGlassesRight[f]);
-		//npc_spr = (player_px<px)?animChatterGlassesLeft[j]:npc_spr = animChatterGlassesRight[j];
 
 		return;
 	}
@@ -868,7 +858,7 @@ void NPCchatter(){
 	if(player_py == npc_y){
 		if(!((npc_x-16) >= (player_px+16) || (npc_x+16+16) < player_px)){
 			if(!npc_wait){
-				player_topic = (GetPrngNumber(0)&0xFF)%topics_active;
+				player_topic = (GetPrngNumber(0)&0xFF)%TOPIC_MAX;//topics_active;
 				npc_dir = DIR_NONE;
 				npc_wait = 100;
 				npc_cnt = 50;
@@ -1065,7 +1055,7 @@ void NPCboxMan(){
 		case DIR_LEFT:
 			npc_x--;
 
-			if(npc_x < -7){//-7){//////was hacked to 0
+			if(npc_x < -7){
 				NPCchangeFloorLeft();
 				npc_cnt = 50;
 			}else if(!CheckMap(npc_x+4-1,npc_y+24))
@@ -1077,7 +1067,7 @@ void NPCboxMan(){
 		case DIR_RIGHT:
 			npc_x++;
 
-			if(npc_x >= SCREEN_WIDTH-16){//if(npc_x >= 248){//////was hacked to -16
+			if(npc_x >= SCREEN_WIDTH-16){
 				NPCchangeFloorRight();
 				npc_cnt = 50;
 			}else if(!CheckMap(npc_x+16-4,npc_y+24))
@@ -1138,7 +1128,7 @@ void NPCdibrov(){
 			break;
 	}
 
-	if(npc_x >= SCREEN_WIDTH-8 || npc_x < -7){////////if(npc_x>=248||npc_x<-7){
+	if(npc_x >= SCREEN_WIDTH-8 || npc_x < -7){
 		npc_cnt = player_wisdom?player_wisdom+25:25;
 
 		if(player_px < 128)
@@ -1157,7 +1147,7 @@ void NPCdibrov(){
 
 
 
-void NPCghost(){
+void NPCghost(){//return;
 	if(npc_wait){
 		npc_wait--;
 		return;
@@ -1198,7 +1188,9 @@ void NPCghost(){
 		if(npc_dy < 12)
 			npc_dy++;
 	}
-
+//npc_dx = npc_dy = 0;
+//PrintInt(6,0,npc_dx,0);
+//PrintInt(6,1,npc_dy,0);
 	npc_x += npc_dx;
 	npc_y += npc_dy;
 }
@@ -1207,20 +1199,22 @@ void NPCghost(){
 void LoadLevel(){
 	uint16_t loff = 0;
 	uint8_t x,y,l,t,did_left;
+	//WaitVsync(1);
 	ClearVram();
-	WaitVsync(1);
+
 
 	floor_left_cnt = 0;
 	floor_right_cnt = 0;
 	topic_flash_x = 0;
 
 	bonus = (level == LEVEL_BONUS)?1:0;
-
+//bonus = 0;
 	for(uint8_t i=0;i<level;i++){
-		loff += 3;//eat tile set, calls, delay between calls
-		loff += 2;//eat player start
-		while(pgm_read_byte(&lvl_data[loff++]) != 255)//eat NPC
-			loff += 2;	
+		loff += 3+2+4;//loff += 3;//eat tile set, calls, delay between calls
+		//loff += 2;//eat player start
+		//loff += 4;
+		//while(pgm_read_byte(&lvl_data[loff++]) != 255)//eat NPC
+		//	loff += 2;	
 		while(pgm_read_byte(&lvl_data[loff++]) != 255)//eat platforms
 			loff += 2;
 		while(pgm_read_byte(&lvl_data[loff++]) != 255)//eat ladders
@@ -1248,13 +1242,14 @@ void LoadLevel(){
 
 
 	while(1){//NPCs
-
 		x = pgm_read_byte(&lvl_data[loff++]);
 		if(x == 255)
-			break;			
+			break;
 		x *= 8;
 		y = pgm_read_byte(&lvl_data[loff++])*8;
 		t = pgm_read_byte(&lvl_data[loff++]);
+		if(t == 255)
+			continue;
 		NPCadd(x,y,t);
 
 /*
@@ -1361,9 +1356,11 @@ void LoadLevel(){
 		phone_x[phone_all] = x+1;
 		phone_y[phone_all] = y;
 		PhoneReset(phone_all,((uint16_t)phone_all)<<8,0);
-		if(bonus)//hide phones for bonus level
-			SetTile(x+1,y,0);
 		phone_all++;
+		if(bonus){//hide phones for bonus level
+			SetTile(x+1,y,0);
+			phone_all = 1;
+		}
 
 		table_x[table_all] = x;
 		table_y[table_all++] = y;
@@ -1398,7 +1395,7 @@ void LoadLevel(){
 
 	for(uint8_t i=0;i<3;i++)
 		topic_msg[i] = (GetPrngNumber(0) % pgm_read_byte(&topicMessagesCount[i]));
-
+	//WaitVsync(1);
 }
 
 uint8_t GameLoop(){
@@ -1434,7 +1431,7 @@ uint8_t GameLoop(){
 	coffee_wait = 150;
 	topic_flash_cnt = 0;
 
-	npc_all = 0;
+	npc_type = 255;
 	phone_all = 0;
 	topic_all = 0;
 	table_all = 0;
@@ -1450,7 +1447,7 @@ uint8_t GameLoop(){
 
 	LoadLevel();
 
-	ZSPrint(0,0,PSTR("    DAY:   CALL:  +    MISS: + "));
+	Print(0,0,PSTR("    DAY:   CALL:  +    MISS: + "));
 	SetTile(SCREEN_TILES_H-13,0,TILE_NUM_START+(calls_level/10));
 	SetTile(SCREEN_TILES_H-12,0,TILE_NUM_START+(calls_level%10));
 	SetTile(SCREEN_TILES_H-2,0,TILE_NUM_START+calls_missed_level);
@@ -1461,7 +1458,7 @@ uint8_t GameLoop(){
 			l--;
 		SetTile(9,0,TILE_NUM_START+1+l);	
 	}else
-		ZSPrint(0,0,PSTR("     DREAM "));
+		Print(0,0,PSTR("     DREAM "));
 
 	if(bonus){
 		//update_list_len += 6*3;
@@ -1517,7 +1514,7 @@ uint8_t GameLoop(){
 		py = player_y>>FP_BITS;
 
 		if(!player_knocked){
-			if(!CheckMap(px+4,py+24) && !CheckMap(px+12,py+24)){//nothing underneath the player?
+			if(!CheckMap(px+4,py+24) && !CheckMap(px+12,py+24) && py+24){//nothing underneath the player?
 				player_y += 4<<FP_BITS;
 				player_ladder = 0;
 
@@ -1658,8 +1655,8 @@ uint8_t GameLoop(){
 		if(player_answer)
 			player_answer--;
 
-		player_px = player_x>>FP_BITS;
-		player_py = player_y>>FP_BITS;
+		player_px = (int16_t)(player_x>>FP_BITS);
+		player_py = (int16_t)(player_y>>FP_BITS);
 
 		if(coffee_y){
 			if(coffee_wait){
@@ -1752,12 +1749,6 @@ uint8_t GameLoop(){
 				}
 			}else
 				phone_runaway--;
-
-			//do some flicker for this stage
-			//if(GetPrngNumber(0)&31 == 12)
-			//	DDRC = 0b10100100;
-			//else if(frame_cnt&15 < 2)
-			//	DDRC = 0b11111111;
 		}
 
 		uint8_t phone_ringing = 0;//if any phone is ringing
@@ -1804,7 +1795,7 @@ uint8_t GameLoop(){
 							if(!bonus){
 								PhoneReset(i,0,1);
 								player_answer = 25;
-								SetMessage((uint8_t *)(pgm_read_word(&topicMessages[player_topic])+(topic_msg[player_topic]*30)));
+								SetMessage((uint8_t *)(pgm_read_word(&topicMessages[phone_topic[i]])+(topic_msg[phone_topic[i]]*30)));
 /////////////////////////////////TODO READ THIS RIGHT
 								topic_msg[player_topic] = (topic_msg[player_topic]+1+(GetPrngNumber(0)&3))%pgm_read_byte(&topicMessagesCount[player_topic]);
 							}
@@ -1853,16 +1844,16 @@ uint8_t GameLoop(){
 		//process npc movements
 		player_slowdown = 0;
 
-		if(npc_all){
-			switch(npc_type){
-				case NPC_CHIEF:   NPCchief();   break;
-				case NPC_BOUNCER: NPCbouncer(); break;
-				case NPC_CHATTER: NPCchatter(); break;
-				case NPC_GEEK:	  NPCgeek();    break;
-				case NPC_MANBOX:  NPCboxMan();  break;
-				case NPC_DIBROV:  NPCdibrov();  break;
-				case NPC_GHOST:   NPCghost();   break;
-			}
+
+		switch(npc_type){
+			case NPC_CHIEF:   NPCchief();   break;
+			case NPC_BOUNCER: NPCbouncer(); break;
+			case NPC_CHATTER: NPCchatter(); break;
+			case NPC_GEEK:	  NPCgeek();    break;
+			case NPC_MANBOX:  NPCboxMan();  break;
+			case NPC_DIBROV:  NPCdibrov();  break;
+			case NPC_GHOST:   NPCghost();   break;
+			default:	break;//no NPC for this levle		
 		}
 
 		//show message
@@ -2007,11 +1998,11 @@ return;
 	ClearVram();
 	WaitVsync(1);
 
-	TriggerFx(40,255,0);
+	TriggerFx(45,255,0);
 	Track *track=&tracks[4];
 	tracks[4].flags|=TRACK_FLAGS_PRIORITY;
 	track->patchCommandStreamPos = NULL;
-	TriggerCommon(track,41,255,80);
+	TriggerCommon(track,46,255,80);
 	track->flags|=TRACK_FLAGS_PLAYING;
 
 
@@ -2029,11 +2020,9 @@ return;
 			else
 				sprites[j].y = pgm_read_byte(&uze_sine_table[i+(j*10)]);
 
-			//sprites[j].y -= 8;
 			sprites[j].x = (j*8)+104;
-			if(i == 30+(j*5) || i == 60+(j*11)){//dbf();
-				HeartsAdd(sprites[j].x,sprites[j].y);			
-			}		
+			if(i == 30+(j*5) || i == 60+(j*11))
+				HeartsAdd(sprites[j].x,sprites[j].y);					
 		}
 		WaitVsync(1);
 	}
@@ -2063,14 +2052,14 @@ return;
 
 
 	FadeIn(2,false);
-	ZSPrint(8 ,4,PSTR("ORIGINAL GAME"));
-	ZSPrint(11,6,PSTR("PINWIZZ"));
-	ZSPrint(12,8,PSTR("SHIRU"));
-	ZSPrint(10,10,PSTR("CC*BY 2011"));
+	Print(8 ,4,PSTR("ORIGINAL GAME"));
+	Print(11,6,PSTR("PINWIZZ"));
+	Print(12,8,PSTR("SHIRU"));
+	Print(10,10,PSTR("CC*BY 2011"));
 
-	ZSPrint(9,17,PSTR("UZEBOX PORT"));
-	ZSPrint(10,19,PSTR("LEE WEBER"));
-	ZSPrint(9,21,PSTR("GPL V3 2017"));
+	Print(9,17,PSTR("UZEBOX PORT"));
+	Print(10,19,PSTR("LEE WEBER"));
+	Print(9,21,PSTR("GPL V3 2017"));
 
 	WaitVsync(1);
 	for(uint16_t i=0;i<VRAM_SIZE;i++){//blue numerical tiles are nice in game, but clash on the intro
@@ -2097,7 +2086,7 @@ void TitleScreen(){
 //		for(uint8_t x=0+3;x<24+3;x++)
 //			vram[(y*VRAM_TILES_H)+x] = pgm_read_byte(&titleMap[i16++]);//vram[((y>>3)*256)+(8*x)+(y&7)] = pgm_read_byte(&titleMap[i16++]);
 	DrawMap(4,1,titleMap);
-	ZSPrint(7,14,PSTR("ZOOMING   SECRETARY"));
+	Print(7,14,PSTR("ZOOMING   SECRETARY"));
 	for(uint8_t x=7;x<7+19;x++){
 		uint8_t t = vram[(14*VRAM_TILES_H)+x]-RAM_TILES_COUNT;
 		for(uint8_t r=0;r<64;r++){
@@ -2124,9 +2113,9 @@ void TitleScreen(){
 		frame_cnt++;
 
 		if((frame_cnt & 63) < 32)//flash "PRESS  START"
-			ZSPrint(10,21-1,PSTR("PRESS  START"));
+			Print(10,21-1,PSTR("PRESS  START"));
 		else
-			ZSPrint(10,21-1,PSTR("            "));
+			Print(10,21-1,PSTR("            "));
 
 
 		if(padState && !oldPadState && t < 255){
@@ -2151,9 +2140,9 @@ void TitleScreen(){
 
 	for(uint8_t i=0;i<72;i++){//rapid flash "PRESS  START"
 		if((frame_cnt & 7) < 4)
-			ZSPrint(10,21-1,PSTR("PRESS  START"));
+			Print(10,21-1,PSTR("PRESS  START"));
 		else
-			ZSPrint(10,21-1,PSTR("            "));
+			Print(10,21-1,PSTR("            "));
 
 		frame_cnt++;
 		WaitVsync(1);
@@ -2163,7 +2152,7 @@ void TitleScreen(){
 
 
 	if(test_mode){//sound test
-		ZSPrint(10,21-1,PSTR(" SOUND TEST "));
+		Print(10,21-1,PSTR(" SOUND TEST "));
 		uint8_t t2,t3;
 		t = t2 = t3 = 0;
 
@@ -2175,12 +2164,12 @@ void TitleScreen(){
 
 			PrintByte(14,23-1,t2,1);
 			PrintByte(22,23-1,t3,1);
-			ZSPrint(9,23-1,PSTR("SFX:"));
-			ZSPrint(17,23-1,PSTR("BGM:"));
+			Print(9,23-1,PSTR("SFX:"));
+			Print(17,23-1,PSTR("BGM:"));
 
 
 			if((frame_cnt & 7) < 4)	
-					ZSPrint((t==0)?13:21,23-1,PSTR("  "));
+					Print((t==0)?13:21,23-1,PSTR("  "));
 
 
 			if((padState & BTN_START) && !(oldPadState & BTN_START))
@@ -2229,16 +2218,16 @@ void TitleScreen(){
 void UpdateLevelStr(uint8_t lev){
 
 	if(lev == LEVEL_BONUS)
-		ZSPrint(12,11,PSTR(" DREAM "));
+		Print(12,11,PSTR(" DREAM"));
 	else{
 		if(lev == LEVELS_ALL){
-			ZSPrint(12,11,PSTR("WEEKEND"));
+			Print(12,11,PSTR("WEEKEND"));
 			return;		
 		}
 
 		if(lev > LEVEL_BONUS)
 			lev--;
-		ZSPrint(12,11,PSTR(" DAY:   "));//spaces to cover up "WEEKEND"
+		Print(12,11,PSTR(" DAY:   "));//spaces to cover up "WEEKEND"
 		SetTile(17,11,TILE_NUM_START+lev+1);
 	}
 
@@ -2273,7 +2262,7 @@ void ShowLevelNumber(){
 		}
 	}
 
-	if(level<LEVELS_ALL)
+	if(level < LEVELS_ALL)
 		StartSong((const char *)pgm_read_word(&musicData[MUS_LEVEL]));
 
 	WaitVsync(50*3);
@@ -2284,8 +2273,8 @@ void ShowLevelNumber(){
 
 void ShowGameOver(){
 
-	ZSPrint(3,8, PSTR("YOU MISSED TOO MANY CALLS!"));//blue
-	ZSPrint(9,11,PSTR("YOU ARE FIRED!"));//white(unmodified)
+	Print(3,8, PSTR("YOU MISSED TOO MANY CALLS!"));//blue
+	Print(9,11,PSTR("YOU ARE FIRED!"));//white(unmodified)
 	
 	uint16_t rtoff = 0;
 	uint16_t toff = 0;
@@ -2323,7 +2312,7 @@ void ShowGameOver(){
 		frame_cnt++;
 
 		if((frame_cnt&7) < 4){
-			ZSPrint(8,14,PSTR("AND HIRED AGAIN!"));//light blue
+			Print(8,14,PSTR("AND HIRED AGAIN!"));//light blue
 			rtoff = basertoff;
 			for(uint8_t vx=3;vx<29;vx++){//color the tiles
 				if(vram[(14*VRAM_TILES_H)+vx] == RAM_TILES_COUNT)//blank space
@@ -2337,7 +2326,7 @@ void ShowGameOver(){
 					ram_tiles[rtoff++] = pgm_read_byte(&gameTiles[toff++])&0b11010010;//make white font blue
 			}		
 		}else if(frame_cnt < 148)
-			ZSPrint(8,14,PSTR("                "));
+			Print(8,14,PSTR("                "));
 	}
 
 	ChangeScreen();
@@ -2348,8 +2337,8 @@ void ShowGameOver(){
 void ShowCongratulations(){
 
 	DrawMap(4,3,winMap);
-	ZSPrint(6,21,PSTR("YOU DID A GREAT JOB!"));
-	ZSPrint(4,23,PSTR("NOW YOU CAN TAKE A REST!"));
+	Print(6,21,PSTR("YOU DID A GREAT JOB!"));
+	Print(4,23,PSTR("NOW YOU CAN TAKE A REST!"));
 
 	frame_cnt = 0;
 
@@ -2362,8 +2351,6 @@ void ShowCongratulations(){
 	StartSong((const char *)pgm_read_word(&musicData[MUS_WELLDONE]));
 
 	while(1){
-
-
 		if(i >= 180)
 			s = (frame_cnt&64) ? 1:0;
 		else{
@@ -2385,13 +2372,15 @@ void ShowCongratulations(){
 		t++;
 		w++;
 
-		if(t >= 1280)
+		if(t >= 1900 && s < 2){//1280)
 			t = 0;
+			StartSong((const char *)pgm_read_word(&musicData[MUS_WELLDONE]));
+		}
 
-		if(t == 1240)
+		if(t == 1860)//1240)
 			ZSTriggerFx(SFX_RINGTONE);
 		
-		if(t == 1270)
+		if(t == 1880)//1270)
 			i = 0;
 
 		//if(w == 30 || w == 153)//do background water sound
@@ -2402,16 +2391,16 @@ void ShowCongratulations(){
 	
 
 	FadeOut(6,false);
-	while(masterVolume > 5){
-		masterVolume -= 5;
+	while(masterVolume){
+		masterVolume--;
 		WaitVsync(1);
 	}
-	while(DDRC);
 	StopSong();
-	SetMasterVolume(ZS_MASTER_VOL);	
+	WaitVsync(4);
+	while(DDRC);	
 	ClearVram();
 	ResetSprites();
-	ZSPrint(5,SCREEN_TILES_V/2,PSTR("THANK YOU FOR PLAYING!"));
+	Print(5,SCREEN_TILES_V/2,PSTR("THANK YOU FOR PLAYING!"));
 	FadeIn(6,false);
 	WaitVsync(240);
 	FadeOut(5,true);
@@ -2420,16 +2409,16 @@ void ShowCongratulations(){
 
 
 
-
-int main(){
+void main(){
 	InitMusicPlayer(patches);
 	GetPrngNumber(GetTrueRandomSeed());
 	SetTileTable(gameTiles);
 	SetSpritesTileBank(0,gameSprites);
 	SetSpritesTileBank(1,gameTiles);
 	SetUserPostVsyncCallback(&PostVsync);
-	ClearVram();
+RESTARTGAME:
 	SetMasterVolume(ZS_MASTER_VOL);
+	ClearVram();
 	ChangeScreen();
 	Intro();
 
@@ -2446,7 +2435,7 @@ int main(){
 
 			if(level == LEVELS_ALL){
 				ShowCongratulations();
-				break;
+				goto RESTARTGAME;
 			}
 
 			if(GameLoop())
@@ -2455,5 +2444,4 @@ int main(){
 				ShowGameOver();
 		}
 	}
-	return 0;
 }
