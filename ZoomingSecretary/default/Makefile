@@ -26,7 +26,7 @@ MIX_PATH_ESC:= $(subst $(SPACE),$(SPACE_ESC),$(MIX_PATH))
 KERNEL_DIR = ../../../kernel
 KERNEL_OPTIONS  = -DINTRO_LOGO=0 -DTRUE_RANDOM_GEN=1
 KERNEL_OPTIONS += -DSOUND_MIXER=1 -DSOUND_CHANNEL_5_ENABLE=1
-KERNEL_OPTIONS += -DVIDEO_MODE=3 -DSCREEN_TILES_V=25 -DFIRST_RENDER_LINE=36 -DMAX_SPRITES=24 -DRAM_TILES_COUNT=38 -DTRANSLUCENT_COLOR=0xC7
+KERNEL_OPTIONS += -DVIDEO_MODE=3 -DSCREEN_TILES_V=25 -DFIRST_RENDER_LINE=36 -DMAX_SPRITES=24 -DRAM_TILES_COUNT=37 -DTRANSLUCENT_COLOR=0xC7
 KERNEL_OPTIONS += -DRESOLUTION_EXT=1 -DVRAM_TILES_H=32 ##-DSCREEN_TILES_H=32
 
 
@@ -37,25 +37,20 @@ COMMON = -mmcu=$(MCU)
 
 ## Compile options common for all C compilation units.
 CFLAGS = $(COMMON)
-CFLAGS += -Wall -gdwarf-2 -std=gnu99 -DF_CPU=28636360UL -Os -fsigned-char -ffunction-sections -fno-toplevel-reorder
-CFLAGS +=  -MD -MP -MT $(*F).o -MF dep/$(@F).d 
-CFLAGS += $(KERNEL_OPTIONS) 
-#CFLAGS += -gstrict-dwarf
-
+CFLAGS += -Wall -gdwarf-2 -std=gnu99 -DF_CPU=28636360UL -Os -fsigned-char -ffunction-sections -fno-toplevel-reorder -mcall-prologues -ffreestanding -fomit-frame-pointer -fno-tree-switch-conversion
+CFLAGS += -MD -MP -MT $(*F).o -MF dep/$(@F).d 
+CFLAGS += $(KERNEL_OPTIONS)
 
 
 ## Assembly specific flags
 ASMFLAGS = $(COMMON)
 ASMFLAGS += $(CFLAGS)
-ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2 
-#ASMFLAGS += -Wa,-gstrict-dwarf
-
-
+ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 
 ## Linker flags
 LDFLAGS = $(COMMON)
 LDFLAGS += -Wl,-Map=$(GAME).map 
-LDFLAGS += -Wl,-gc-sections 
+LDFLAGS += -Wl,-gc-sections
 LDFLAGS += -T $(KERNEL_DIR)/uzebox_linkscript.x
 
 
@@ -67,8 +62,9 @@ HEX_EEPROM_FLAGS += --set-section-flags=.eeprom="alloc,load"
 HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 
+
 ## Objects that must be built in order to link
-OBJECTS = uzeboxVideoEngineCore.o  uzeboxCore.o uzeboxSoundEngine.o uzeboxSoundEngineCore.o uzeboxVideoEngine.o $(GAME).o 
+OBJECTS = uzeboxVideoEngineCore.o uzeboxCore.o uzeboxSoundEngine.o uzeboxSoundEngineCore.o uzeboxVideoEngine.o $(GAME).o 
 
 
 
@@ -83,7 +79,7 @@ INCLUDES = -I"$(KERNEL_DIR)"
 
 
 ## Build
-all: ../data/tiles.inc ../data/sprites.inc ../data/music/intro_mus.inc ../data/music/mus_game.inc ../data/music/mus_gameover.inc ../data/music/mus_welldone.inc $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze  size
+all: ../data/music/mus_level.inc ../data/music/mus_game.inc ../data/music/mus_nobonus.inc ../data/music/mus_welldone.inc ../data/music/mus_dream.inc ../data/music/mus_gameover.inc ../data/music/mus_clear.inc $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze  size
 
 
 
@@ -94,17 +90,26 @@ all: ../data/tiles.inc ../data/sprites.inc ../data/music/intro_mus.inc ../data/m
 ../data/sprites.inc: ../data/sprites.png ../data/sprites.xml
 	$(UZEBIN_DIR)gconvert ../data/sprites.xml
 
-../data/music/intro_mus.inc: ../data/midi/song1done.mid
-	$(UZEBIN_DIR)midiconv ../data/midi/introsong.mid ../data/music/introsong.inc -vintroSong -f1
+../data/music/mus_level.inc: ../data/midi/levelsong.mid
+	$(UZEBIN_DIR)midiconv ../data/midi/levelsong.mid ../data/music/mus_level.inc -vmus_level -f1
 
 ../data/music/mus_game.inc: ../data/midi/gamesong.mid
 	$(UZEBIN_DIR)midiconv ../data/midi/gamesong.mid ../data/music/mus_game.inc -vmus_game -f24 -s0 -e30720
 
-../data/music/mus_gameover.inc: ../data/midi/gameoversong.mid
-	$(UZEBIN_DIR)midiconv ../data/midi/gameoversong.mid ../data/music/mus_gameover.inc -vmus_gameover -f60
+../data/music/mus_nobonus.inc: ../data/midi/nobonussong.mid
+	$(UZEBIN_DIR)midiconv ../data/midi/nobonussong.mid ../data/music/mus_nobonus.inc -vmus_nobonus -f60
 
 ../data/music/mus_welldone.inc: ../data/midi/welldonesong.mid
-	$(UZEBIN_DIR)midiconv ../data/midi/welldonesong.mid ../data/music/mus_welldone.inc -vmus_welldone -f60
+	$(UZEBIN_DIR)midiconv ../data/midi/welldonesong.mid ../data/music/mus_welldone.inc -vmus_welldone -f18
+
+../data/music/mus_dream.inc: ../data/midi/dreamsong.mid
+	$(UZEBIN_DIR)midiconv ../data/midi/dreamsong.mid ../data/music/mus_dream.inc -vmus_dream -f8 -s0 -e7680
+
+../data/music/mus_gameover.inc: ../data/midi/gameoversong.mid
+	$(UZEBIN_DIR)midiconv ../data/midi/gameoversong.mid ../data/music/mus_gameover.inc -vmus_gameover -f20
+
+../data/music/mus_clear.inc: ../data/midi/clearsong.mid
+	$(UZEBIN_DIR)midiconv ../data/midi/clearsong.mid ../data/music/mus_clear.inc -vmus_clear -f30
 
 
 
