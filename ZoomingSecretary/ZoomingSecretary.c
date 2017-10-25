@@ -1795,7 +1795,7 @@ uint8_t GameLoop(){
 							if(!bonus){
 								PhoneReset(i,0,1);
 								player_answer = 25;
-								SetMessage((uint8_t *)(pgm_read_word(&topicMessages[phone_topic[i]])+(topic_msg[phone_topic[i]]*30)));
+								SetMessage((uint8_t *)(pgm_read_word(&topicMessages[player_topic])+(topic_msg[player_topic]*30)));
 /////////////////////////////////TODO READ THIS RIGHT
 								topic_msg[player_topic] = (topic_msg[player_topic]+1+(GetPrngNumber(0)&3))%pgm_read_byte(&topicMessagesCount[player_topic]);
 							}
@@ -1992,8 +1992,8 @@ uint8_t GameLoop(){
 
 
 void Intro(){
-test_mode = 1;
-return;
+//test_mode = 1;
+//return;
 	ResetSprites();
 	ClearVram();
 	WaitVsync(1);
