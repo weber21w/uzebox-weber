@@ -200,7 +200,7 @@ sprDibrovWalk4R
 
 
 
-const uint8_t animPhone[] PROGMEM = {///////////UPDATED TO NEW TILESET/////////////////
+const uint8_t animPhone[] PROGMEM = {
 64,64,64,64,//idle
 64,65,66,65,//level 1
 67,68,69,68,//level 2

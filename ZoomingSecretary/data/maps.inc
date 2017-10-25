@@ -8,6 +8,7 @@ const uint8_t lvl_data[] PROGMEM = {
 	15,18,	
 
 	//NPC
+	0,0,255,
 	255,
 
 	//platforms

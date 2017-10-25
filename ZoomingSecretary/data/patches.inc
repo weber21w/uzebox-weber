@@ -266,7 +266,7 @@ const char patch14[] PROGMEM = {
   0, PC_TREMOLO_LEVEL, 66,
   0, PC_TREMOLO_RATE, 45,
   0, PC_ENV_SPEED, -2,
-  0, PC_ENV_VOL, 66,
+  0, PC_ENV_VOL, 46,
   0, PC_PITCH, 69,
   18, PC_ENV_VOL, 66,
   0, PC_PITCH, 69,
@@ -277,32 +277,22 @@ const char patch14[] PROGMEM = {
   0, PATCH_END,
 };
 const char patch15[] PROGMEM = {
-  0, PC_WAVE, 5,
-  0, PC_TREMOLO_LEVEL, 111,
-  0, PC_TREMOLO_RATE, 88,
-  0, PC_PITCH, 60,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 76,
-  0, PC_PITCH, 83,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 86,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 60,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 76,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 79,
-  3, PC_ENV_VOL, 66,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 79,
-  0, PC_PITCH, 83,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 67,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 83,
-  0, PC_PITCH, 86,
-  0, PC_ENV_SPEED, -10,
-  3, PATCH_END,
+  0, PC_WAVE, 9,
+  0, PC_TREMOLO_LEVEL, 199,
+  0, PC_TREMOLO_RATE, 101,
+  0, PC_ENV_VOL, 60,
+  0, PC_PITCH, 92,
+  0, PC_LOOP_START,1,
+3,PC_NOTE_DOWN,5,
+2,PC_NOTE_DOWN,5,
+4,PC_NOTE_UP,6,
+3,PC_NOTE_DOWN,5,
+3,PC_NOTE_DOWN,3,
+0,PC_ENV_SPEED,-2,
+5,PC_NOTE_UP,7,
+3,PC_LOOP_END,0,
+0,PC_ENV_SPEED,-5,
+  30, PATCH_END,
 };
 const char patch16[] PROGMEM = {
   0, PC_WAVE, 6,
@@ -334,61 +324,24 @@ const char patch17[] PROGMEM = {
   0, PATCH_END,
 };
 const char patch18[] PROGMEM = {
-0,PC_ENV_VOL,50,
-0,PC_ENV_SPEED,3,
 0,PC_WAVE,8,
 0,PC_TREMOLO_LEVEL,199,
-0,PC_TREMOLO_RATE,101,
-1,PC_PITCH,43,
-1,PC_PITCH,47,
-1,PC_PITCH,46,
-1,PC_PITCH,40,
-1,PC_PITCH,49,
-1,PC_PITCH,53,
-0,PC_ENV_SPEED,-4,
-1,PC_PITCH,58,
-1,PC_PITCH,52,
-1,PC_PITCH,56,
-
-1,PC_PITCH,71,
-0,PC_ENV_VOL,40,
-1,PC_PITCH,65,
-1,PC_PITCH,69,
-1,PC_PITCH,74,
-1,PC_PITCH,68,
-1,PC_PITCH,72,
-1,PC_PITCH,77,
-1,PC_PITCH,81,
-1,PC_PITCH,85,
-1,PC_PITCH,90,
-1,PC_PITCH,84,
-1,PC_PITCH,88,
-1,PC_PITCH,93,
-1,PC_PITCH,87,
-1,PC_PITCH,91,
-1,PC_PITCH,96,
-1,PC_PITCH,90,
-
-1,PC_ENV_SPEED,-2,
-0,PC_ENV_VOL,50,
-1,PC_PITCH,94,
-1,PC_PITCH,99,
-1,PC_PITCH,93,
-1,PC_PITCH,97,
-1,PC_PITCH,102,
-1,PC_PITCH,95,
-1,PC_PITCH,100,
-1,PC_PITCH,105,
-1,PC_PITCH,99,
-1,PC_PITCH,104,
-1,PC_PITCH,109,
-1,PC_PITCH,102,
-1,PC_PITCH,107,
-1,PC_PITCH,112,
-1,PC_PITCH,102,
-1,PC_PITCH,107,
-1,PC_PITCH,112,
-0,PATCH_END,0,
+0,PC_TREMOLO_RATE,222,
+0,PC_PITCH,33,
+0,PC_LOOP_START,3,
+0,PC_ENV_VOL,30,
+1,PC_NOTE_UP,4,
+1,PC_NOTE_DOWN,1,
+1,PC_NOTE_UP,4,
+1,PC_NOTE_DOWN,1,
+1,PC_NOTE_UP,4,
+1,PC_NOTE_UP,4,
+1,PC_NOTE_UP,4,
+0,PC_ENV_SPEED,-1,
+1,PC_NOTE_UP,4,
+1,PC_NOTE_UP,5,
+2,PC_LOOP_END,11,
+30,PATCH_END,0,
 };
 const char patch19[] PROGMEM = {
   0, PC_ENV_VOL, 22,
@@ -478,32 +431,8 @@ const char patch24[] PROGMEM = {//part 2 of lose
   0, PC_PITCH, 69,
   30, PATCH_END,
 };
-const char patch25[] PROGMEM = {
-  0, PC_TREMOLO_LEVEL, 222,
-  0, PC_TREMOLO_RATE, 44,
-  0, PC_PITCH, 60,
-  4, PC_ENV_VOL, 66,
-  0, PC_PITCH, 76,
-  0, PC_PITCH, 83,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 86,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 60,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 76,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 79,
-  3, PC_ENV_VOL, 66,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 79,
-  0, PC_PITCH, 83,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 67,
-  3, PC_ENV_VOL, 66,
-  0, PC_PITCH, 83,
-  0, PC_PITCH, 86,
-  0, PC_ENV_SPEED, -10,
-  3, PATCH_END,
+const char patch25[] PROGMEM = {//SFX_BLA2 part 2
+  30, PATCH_END,
 };
 const char patch26[] PROGMEM = {
   0, PC_WAVE, 4,
@@ -520,10 +449,18 @@ const char patch28[] PROGMEM = {
   0, PC_ENV_SPEED, -6,
   0, PATCH_END,
 };
-const char patch29[] PROGMEM = {
-  0, PC_WAVE, 4,
-  0, PC_ENV_SPEED, -6,
-  0, PATCH_END,
+const char patch29[] PROGMEM = {//dream song instrument
+0,PC_WAVE,8,//2
+0,PC_ENV_VOL,24,
+0,PC_ENV_SPEED,8,
+0,PC_TREMOLO_RATE,88,
+0,PC_TREMOLO_LEVEL,77,
+1,PC_ENV_SPEED,-2,
+0,PC_WAVE,8,//2
+//8,PC_ENV_SPEED,-4,
+//2,PC_ENV_SPEED,-10,
+//3,PC_ENV_SPEED,-12,
+60,PATCH_END
 };
 const char patch30[] PROGMEM = {//vacation song instrument 1(rapid notes)
 0,PC_WAVE,0,//2
@@ -540,71 +477,79 @@ const char patch30[] PROGMEM = {//vacation song instrument 1(rapid notes)
 };
 const char patch31[] PROGMEM = {//vacation song instrument 2
 0,PC_TREMOLO_LEVEL,155,     
-0,PC_TREMOLO_RATE,160, 
-0,PC_WAVE,9,
+0,PC_TREMOLO_RATE,200, 
+0,PC_WAVE,8,
 0,PC_ENV_VOL,34,
 //0,PC_ENV_SPEED,3,
 6,PC_ENV_SPEED,-1,
+0,PC_TREMOLO_LEVEL,200,     
+0,PC_TREMOLO_RATE,111, 
+//0,PC_WAVE,8,
+60,PATCH_END
+};
+const char patch32[] PROGMEM = {//no bonus song instrument 1
+0,PC_WAVE,0,//2
+0,PC_ENV_VOL,20,
+0,PC_ENV_SPEED,2,
+0,PC_TREMOLO_RATE,88,
+0,PC_TREMOLO_LEVEL,77,
+1,PC_ENV_SPEED,-2,
+0,PC_WAVE,4,//2
+//8,PC_ENV_SPEED,-4,
+//2,PC_ENV_SPEED,-10,
+//3,PC_ENV_SPEED,-12,
+60,PATCH_END
+};
+const char patch33[] PROGMEM = {//no bonus song instrument 2
+0,PC_WAVE,0,//2
+0,PC_ENV_VOL,20,
+0,PC_ENV_SPEED,2,
+0,PC_TREMOLO_RATE,88,
+0,PC_TREMOLO_LEVEL,77,
+1,PC_ENV_SPEED,-2,
+0,PC_WAVE,4,//2
+//8,PC_ENV_SPEED,-4,
+//2,PC_ENV_SPEED,-10,
+//3,PC_ENV_SPEED,-12,
+60,PATCH_END
+};
+const char patch34[] PROGMEM = {//intro song instrument 1
+0,PC_WAVE,6,//2
+0,PC_ENV_VOL,60,
+0,PC_ENV_SPEED,4,
+0,PC_TREMOLO_RATE,88,
+0,PC_TREMOLO_LEVEL,77,
+0,PC_ENV_SPEED,-3,
+0,PC_WAVE,4,//2
+//8,PC_ENV_SPEED,-4,
+//2,PC_ENV_SPEED,-10,
+//3,PC_ENV_SPEED,-12,
+60,PATCH_END
+};
+const char patch35[] PROGMEM = {//intro song instrument 2
+0,PC_TREMOLO_LEVEL,155,     
+0,PC_TREMOLO_RATE,160, 
+0,PC_WAVE,8,
+0,PC_ENV_VOL,37,
+//0,PC_ENV_SPEED,3,
+0,PC_ENV_SPEED,-3,
 0,PC_WAVE,8,
 60,PATCH_END
 };
-const char patch32[] PROGMEM = {//lose song instrument 1
-  0, PC_WAVE, 4,
-  0, PC_ENV_SPEED, -6,
-  0, PATCH_END,
+const char patch36[] PROGMEM = {//(no longer used?????) intro song instrument 3
+0,PC_WAVE,8,//2
+0,PC_ENV_VOL,0,
+0,PC_ENV_SPEED,8,
+0,PC_TREMOLO_RATE,88,
+0,PC_TREMOLO_LEVEL,77,
+1,PC_ENV_SPEED,-2,
+0,PC_WAVE,8,//2
+//8,PC_ENV_SPEED,-4,
+//2,PC_ENV_SPEED,-10,
+//3,PC_ENV_SPEED,-12,
+60,PATCH_END
 };
-const char patch33[] PROGMEM = {//lose song instrument 2
-  0, PC_WAVE, 4,
-  0, PC_ENV_SPEED, 2,
-  0, PC_TREMOLO_RATE, 178,
-  0, PC_TREMOLO_LEVEL, 99,
-  5, PC_ENV_SPEED, -7,
-  0, PC_WAVE, 4,
-  5, PC_ENV_SPEED, -16,
-  0, PATCH_END,
-};
-const char patch34[] PROGMEM = {//intro song instrument 1
-  0, PC_TREMOLO_LEVEL, 140,
-  0, PC_TREMOLO_RATE, 111,
-0,PC_ENV_VOL,45,
-  0, PC_WAVE, 4,
-  1, PC_ENV_SPEED, 2,
-  0, PC_TREMOLO_LEVEL, 180,
-  0, PC_TREMOLO_RATE, 120,
-  0, PC_ENV_SPEED, -16,
-  0, PATCH_END,
-};
-const char patch35[] PROGMEM = {//intro song instrument 2
-  0, PC_ENV_VOL, 0,
-  0, PC_TREMOLO_LEVEL, 170,
-  0, PC_TREMOLO_RATE, 160,
-0,PC_ENV_VOL,23,
-  0, PC_WAVE, 4,
-  1, PC_ENV_SPEED, -10,
-  0, PATCH_END,
-};
-const char patch36[] PROGMEM = {//intro song instrument 3
-0,PC_WAVE,4,
-//0,PC_ENV_VOL,40,
-//0,PC_TREMOLO_RATE,120,
-//0,PC_TREMOLO_LEVEL,99,
-0,PC_ENV_VOL,54,
-4,PC_ENV_VOL,57,
-0,PC_WAVE,4,
-//1,PC_TREMOLO_RATE,60,
-3,PC_ENV_SPEED,-4,//was 2
-//0,PC_ENV_SPEED,2,
-//7,PC_ENV_SPEED,1,
-//1,PC_ENV_SPEED,0,
-2,PC_ENV_SPEED,-5,
-3,PC_ENV_SPEED,-10,//was 3
-
-//6,PC_ENV_VOL,72,//ADDED ECHO, CREATE STATIC?
-//0,PC_NOTE_HOLD,0,
-//10,PC_NOTE_CUT,0,
-0,PATCH_END
-};
-const char patch37[] PROGMEM = {//intro song precussion
+const char patch37[] PROGMEM = {//unused
   0, PC_ENV_VOL, 0,
   0, PC_ENV_SPEED, -8,
   0, PC_NOISE_PARAMS, 6,
@@ -644,24 +589,83 @@ const char patch39[] PROGMEM = {//main melody drum
   0, PC_NOISE_PARAMS,3,
   0, PATCH_END,
 };
-const char patch40[] PROGMEM = {
-  0, PC_WAVE, 0,
-  0, PC_PITCH, 40,
-  0, PC_ENV_VOL, 190,
-  0, PC_SLIDE_SPEED, 224,
-  0, PC_SLIDE, -30,
-  15, PC_ENV_SPEED, -1,
-  180, PATCH_END,
+const char patch40[] PROGMEM = {//clear song instrument 1
+0,PC_WAVE,4,//2
+0,PC_ENV_VOL,57,
+0,PC_NOTE_UP,24,
+//0,PC_ENV_SPEED,4,
+0,PC_TREMOLO_RATE,88,
+0,PC_TREMOLO_LEVEL,77,
+0,PC_ENV_SPEED,-3,
+0,PC_WAVE,4,//2
+//8,PC_ENV_SPEED,-4,
+//2,PC_ENV_SPEED,-10,
+//3,PC_ENV_SPEED,-12,
+60,PATCH_END
 };
-const char patch41[] PROGMEM = {
-  0, PC_ENV_VOL, 0,
-  0, PC_WAVE, 3,
-  0, PC_PITCH, 39,
-  1, PC_ENV_VOL, 80,
-  0, PC_SLIDE_SPEED, 224,
-  0, PC_SLIDE, -30,
-  0, PC_ENV_SPEED, -1,
-  180, PATCH_END,
+const char patch41[] PROGMEM = {//clear song instrument 2
+0,PC_NOTE_UP,12,
+0,PC_TREMOLO_LEVEL,90,     
+0,PC_TREMOLO_RATE,160, 
+0,PC_WAVE,5,
+0,PC_ENV_VOL,37,
+//0,PC_ENV_SPEED,3,
+0,PC_ENV_SPEED,-3,
+0,PC_WAVE,5,
+60,PATCH_END
+};
+const char patch42[] PROGMEM = {//gameover instrument 1
+0,PC_WAVE,3,//2
+0,PC_ENV_VOL,40,
+//0,PC_ENV_SPEED,2,
+0,PC_TREMOLO_RATE,188,
+0,PC_TREMOLO_LEVEL,177,
+1,PC_ENV_SPEED,-1,
+//0,PC_WAVE,0,//2
+//8,PC_ENV_SPEED,-4,
+//2,PC_ENV_SPEED,-10,
+//3,PC_ENV_SPEED,-12,
+60,PC_NOTE_CUT,0,
+0,PATCH_END
+};
+const char patch43[] PROGMEM = {//gameover instrument 2
+0,PC_NOTE_UP,12,
+0,PC_WAVE,4,
+0,PC_ENV_VOL,50,
+
+//0,PC_WAVE,5,
+
+0,PC_ENV_SPEED,-2,
+//6,PC_ENV_VOL,72,//ADDED ECHO, CREATE STATIC?
+//0,PC_NOTE_HOLD,0,
+//10,PC_NOTE_CUT,0,
+60,PC_NOTE_CUT,0,
+0,PATCH_END
+};
+const char patch44[] PROGMEM = {//(not used now???)gameover instrument 3
+60,PATCH_END
+};
+const char patch45[] PROGMEM ={//D3thAdd3r logo part 1
+	0,PC_WAVE,0,
+	0,PC_PITCH,40,
+	0,PC_ENV_VOL,190,
+	0,PC_SLIDE_SPEED,224,
+	0,PC_SLIDE,-30,
+	15,PC_ENV_SPEED,-1,
+	180,PATCH_END
+};
+
+const char patch46[] PROGMEM ={//D3thAdd3r logo part 2
+	0,PC_ENV_VOL,0,
+	0,PC_WAVE,3,
+	//0,PC_TREMOLO_RATE,60,
+	//0,PC_TREMOLO_LEVEL,169,
+	0,PC_PITCH,39,
+	1,PC_ENV_VOL,80,
+	0,PC_SLIDE_SPEED,224,
+	0,PC_SLIDE,-30,
+	0,PC_ENV_SPEED,-1,
+	180,PATCH_END
 };
 const uint8_t sfxdepth[] PROGMEM = {//for 2 part sfx
 1,255,//SFX_RINGTONE
@@ -679,7 +683,7 @@ const uint8_t sfxdepth[] PROGMEM = {//for 2 part sfx
 1,255,//SFX_START
 1,23,//SFX_PAUSE
 1,24,//SFX_LOSE
-2,25,//SFX_BLA2
+2,255,//SFX_BLA2
 1,255,//SFX_COFFEE_READY
 1,255,//SFX_KNOCK
 1,255,//SFX_WISDOM
@@ -729,7 +733,12 @@ const struct PatchStruct patches[] PROGMEM = {
   {1, NULL, patch37, 0, 0},
   {0, NULL, patch38, 0, 0},
   {1, NULL, patch39, 0, 0},
-  {0, waves+(256*0), patch40, 0, 256},
-  {2, waves+(256*2), patch41, 0, 256},
+  {0, NULL, patch40, 0, 0},
+  {0, NULL, patch41, 0, 0},
+  {0, NULL, patch42, 0, 0},
+  {0, NULL, patch43, 0, 0},
+  {0, NULL, patch44, 0, 0},
+  {0,waves+(256*0),patch45,0,256},//D3thAdd3r logo part 1
+  {2,waves+(256*2),patch46,0,256},//part 2
 };
 
